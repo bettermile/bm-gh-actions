@@ -1,0 +1,39 @@
+name: Stage Deploy
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      AWS_CLUSTER_NAME:
+        required: true
+        type: string
+      AWS_SERVICE_NAME:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  deploy:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+
+      - name: AWS - Setup
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.AWS_REGION }}
+
+      - name: AWS ECS - Deploy
+        run: aws ecs update-service --force-new-deployment --cluster ${{ inputs.AWS_CLUSTER_NAME }} --service ${{ inputs.AWS_SERVICE_NAME }}

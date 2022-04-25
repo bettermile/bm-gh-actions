@@ -1,0 +1,65 @@
+name: Development Environment Pipeline
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        required: true
+        type: string
+      AWS_RDS_DATABASE:
+        required: true
+        type: string
+      AWS_RDS:
+        required: true
+        type: string
+    secrets:
+      SSH_KEY:
+        required: true
+      AWS_RDS_PASSWORD:
+        required: true
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  migration:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+      - name: Install Flyway
+        run: wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/7.14.0/flyway-commandline-7.14.0-linux-x64.tar.gz | tar xvz && sudo ln -s `pwd`/flyway-7.14.0/flyway /usr/local/bin
+      - name: Install SSH key
+        uses: shimataro/ssh-key-action@v2
+        with:
+          key: ${{ secrets.SSH_KEY }}
+          name: id_rsa
+          known_hosts: unnecessary
+          config: |
+            Host bastion
+              User ec2-user
+              ProxyCommand sh -c "aws ssm start-session --target $(aws ssm describe-instance-information --filters "Key=tag:Name,Values=BastionHost" | grep -o '"InstanceId": *"[^"]*' | grep -o '[^"]*$') --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
+              StrictHostKeyChecking no
+              UserKnownHostsFile=/dev/null
+          if_key_exists: fail
+      - name: AWS - Setup
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.AWS_REGION }}
+      - name: Move Migrations into Flyway Directory If Exist
+        shell: bash
+        run: |
+          if [ -f ./src/main/resources/db/migration/* ]; then
+             mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
+          fi
+      - name: Run Flyway Migration
+        shell: bash
+        run: |
+          INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=BastionHost" --query "Reservations[].Instances[?State.Name == 'running'].PublicIpAddress[]" --output text)
+          ssh -o "StrictHostKeyChecking no" ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N
+          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/sql/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info
+          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/sql/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -baselineOnMigrate=true -outOfOrder=true -ignoreMissingMigrations=true migrate
+          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/sql/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info

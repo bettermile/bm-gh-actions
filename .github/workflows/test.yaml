@@ -1,0 +1,23 @@
+name: Stage Test
+
+on:
+  workflow_call:
+
+jobs:
+  test:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+
+      - name: JDK - Setup
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Gradle - Setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Gradle - Test
+        run: ./gradlew test

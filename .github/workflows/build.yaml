@@ -1,0 +1,54 @@
+name: Stage Build
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      AWS_ECR_APP_PATH:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+
+      - name: JDK - Setup
+        uses: actions/setup-java@v3
+        with:
+          java-version: '11'
+          distribution: 'temurin'
+
+      - name: Gradle - Setup
+        uses: gradle/gradle-build-action@v2
+
+      - name: Gradle - Build
+        run: ./gradlew clean build -x test
+
+      - name: AWS - Setup
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.AWS_REGION }}
+
+      - name: AWS ECR - Setup
+        uses: aws-actions/amazon-ecr-login@v1
+
+      - name: Docker - Build
+        run: docker build --platform linux/amd64 --tag ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:latest .
+
+      - name: Docker ECR - Push
+        run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:latest
