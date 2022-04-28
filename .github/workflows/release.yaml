@@ -5,15 +5,21 @@ on:
     secrets:
       RELEASE_GITHUB_TOKEN:
         required: true
+    outputs:
+      new_tag:
+        value: ${{ jobs.release.outputs.new_tag }}
 
 jobs:
   release:
+    outputs:
+      new_tag: ${{ steps.tag_bump_step.outputs.new_tag }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v2
         with:
           fetch-depth: '0'
       - name: Bump version and push tag
+        id: tag_bump_step
         uses: anothrNick/github-tag-action@1.36.0
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}

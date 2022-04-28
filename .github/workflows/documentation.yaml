@@ -1,0 +1,22 @@
+name: Stage Documentation
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_TAG_VERSION:
+        required: true
+        type: string
+    secrets:
+      REDOCLY_AUTHORIZATION:
+        required: true
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+      - name: Install @redocly/openapi
+        run: npm install @redocly/openapi-cli -g
+      - name: Redocly Push
+        run: REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} openapi push ./openapi.yaml "@bettermile/places@${{ inputs.RELEASE_TAG_VERSION }}" -u

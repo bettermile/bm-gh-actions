@@ -1,4 +1,4 @@
-name: Development Environment Pipeline
+name: Stage Migration
 
 on:
   workflow_call:
