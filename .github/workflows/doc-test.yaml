@@ -1,0 +1,16 @@
+name: Stage Documentation Test
+
+on:
+  workflow_call:
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+      - name: Install @redocly/openapi
+        run: npm install @redocly/openapi-cli -g
+      - name: Redocly Lint
+        run: openapi lint openapi/openapi.yaml
+

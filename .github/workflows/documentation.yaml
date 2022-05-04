@@ -6,6 +6,9 @@ on:
       RELEASE_TAG_VERSION:
         required: true
         type: string
+      PROJECT_TAG:
+        required: true
+        type: string
     secrets:
       REDOCLY_AUTHORIZATION:
         required: true
@@ -19,4 +22,4 @@ jobs:
       - name: Install @redocly/openapi
         run: npm install @redocly/openapi-cli -g
       - name: Redocly Push
-        run: REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} openapi push ./openapi/openapi.yaml "@bettermile/places@${{ inputs.RELEASE_TAG_VERSION }}" -u
+        run: REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} openapi push ./openapi/openapi.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
