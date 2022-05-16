@@ -54,7 +54,7 @@ jobs:
         run: |
           DIR="./src/main/resources/db/migration"
           if [ "$(ls -A $DIR)" ]; then
-            mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
+            echo "$DIR is NOT Empty"
           else
             echo "$DIR is Empty"
           fi
