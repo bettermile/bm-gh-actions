@@ -53,15 +53,10 @@ jobs:
         shell: bash
         run: |
           DIR="./src/main/resources/db/migration"
-          if [ -d "$DIR" ]
-          then
-            if [ "$(ls -A $DIR)" ]; then
-              mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
-            else
-            echo "$DIR is Empty"
-            fi
+          if [ "$(ls -A $DIR)" ]; then
+            mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
           else
-            echo "Directory $DIR not found."
+            echo "$DIR is Empty"
           fi
       - name: Run Flyway Migration
         shell: bash
