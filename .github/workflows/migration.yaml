@@ -52,8 +52,16 @@ jobs:
       - name: Move Migrations into Flyway Directory If Exist
         shell: bash
         run: |
-          if [ -f ./src/main/resources/db/migration/* ]; then
-             mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
+          DIR="./src/main/resources/db/migration"
+          if [ -d "$DIR" ]
+          then
+            if [ "$(ls -A $DIR)" ]; then
+              mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
+            else
+            echo "$DIR is Empty"
+            fi
+          else
+            echo "Directory $DIR not found."
           fi
       - name: Run Flyway Migration
         shell: bash
