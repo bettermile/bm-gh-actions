@@ -49,19 +49,11 @@ jobs:
           aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.AWS_REGION }}
-      - name: Move Migrations into Flyway Directory If Exist
-        shell: bash
-        run: |
-          if [ -z "$(ls -A './src/main/resources/db/migration')" ]; then
-            echo "Empty"
-          else
-            mv ./src/main/resources/db/migration/* ./flyway-7.14.0/sql/
-          fi
       - name: Run Flyway Migration
         shell: bash
         run: |
           INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=BastionHost" --query "Reservations[].Instances[?State.Name == 'running'].PublicIpAddress[]" --output text)
           ssh -o "StrictHostKeyChecking no" ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N
-          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/sql/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info
-          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/sql/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -baselineOnMigrate=true -outOfOrder=true -ignoreMissingMigrations=true migrate
-          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/sql/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info
+          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="./src/main/resources/db/migration/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info
+          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="./src/main/resources/db/migration/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -baselineOnMigrate=true -outOfOrder=true -ignoreMissingMigrations=true migrate
+          flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="./src/main/resources/db/migration/" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info
