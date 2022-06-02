@@ -12,6 +12,9 @@ on:
       AWS_RDS:
         required: true
         type: string
+      AWS_BASTION_HOST_NAME:
+        required: false
+        type: string
     secrets:
       SSH_KEY:
         required: true
@@ -39,7 +42,7 @@ jobs:
           config: |
             Host bastion
               User ec2-user
-              ProxyCommand sh -c "aws ssm start-session --target $(aws ssm describe-instance-information --filters "Key=tag:Name,Values=BastionHost" | grep -o '"InstanceId": *"[^"]*' | grep -o '[^"]*$') --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
+              ProxyCommand sh -c "aws ssm start-session --target $(aws ssm describe-instance-information --filters "Key=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" | grep -o '"InstanceId": *"[^"]*' | grep -o '[^"]*$') --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
               StrictHostKeyChecking no
               UserKnownHostsFile=/dev/null
           if_key_exists: fail
@@ -52,7 +55,7 @@ jobs:
       - name: Run Flyway Migration
         shell: bash
         run: |
-          INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=BastionHost" --query "Reservations[].Instances[?State.Name == 'running'].PublicIpAddress[]" --output text)
+          INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" --query "Reservations[].Instances[?State.Name == 'running'].PublicIpAddress[]" --output text)
           ssh -o "StrictHostKeyChecking no" ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N
           flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" info
           flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -baselineOnMigrate=true -outOfOrder=true -ignoreMissingMigrations=true migrate
