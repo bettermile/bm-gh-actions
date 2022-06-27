@@ -12,6 +12,9 @@ on:
       AWS_ECR_APP_PATH:
         required: true
         type: string
+      DOCKER_IMAGE_VERSION:
+        required: false
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -48,7 +51,9 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v1
 
       - name: Docker - Build
-        run: docker build --platform linux/amd64 --tag ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:latest .
+        run: docker build --platform linux/amd64 --tag ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }} .
 
       - name: Docker ECR - Push
-        run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:latest
+        run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
+  
+  
