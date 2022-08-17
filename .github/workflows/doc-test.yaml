@@ -10,7 +10,6 @@ jobs:
       - name: Default Checkout
         uses: actions/checkout@v3
       - name: Install @redocly/openapi
-        run: npm install @redocly/openapi-cli -g
+        run: npm i -g @redocly/cli@latest
       - name: Redocly Lint
-        run: openapi lint openapi/openapi.yaml
-
+        run: redocly lint openapi/openapi.yaml

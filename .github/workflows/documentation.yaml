@@ -17,9 +17,12 @@ jobs:
   documentation:
     runs-on: ubuntu-latest
     steps:
-      - name: Default Checkout
+      - name: Default checkout
         uses: actions/checkout@v3
-      - name: Install @redocly/openapi
-        run: npm install @redocly/openapi-cli -g
-      - name: Redocly Push
-        run: REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} openapi push ./openapi/openapi.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
+      - name: Install @redocly/cli
+        run: npm i -g @redocly/cli@latest
+      - name: Documentation push
+        run: |
+          cd ./openapi
+          redocly bundle external@latest --output dist/external.yaml
+          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./dist/external.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
