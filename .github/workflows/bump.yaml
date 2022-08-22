@@ -1,0 +1,31 @@
+name: Stage Test
+
+on:
+  workflow_call:
+    secrets:
+      RELEASE_GITHUB_TOKEN:
+        required: true
+
+jobs:
+  bump-version:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+      - name: JDK - Setup
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+      - name: Bump Project Version/Create Git Tag/Git Publish
+        run: |
+          git config --global user.name 'CI BOT'
+          git config --global user.email 'ci-bot@noreply.com'
+          git remote set-url origin https://x-access-token:${{ secrets.RELEASE_GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git checkout "${GITHUB_REF:11}"
+          ./gradlew bumpVersion
+          git commit -am "CI Bot - Bump version - $(./gradlew -q getVersion)"
+          git push
+          git tag "$(./gradlew -q getVersion)"
+          git push --tags
+          ./gradlew publish
