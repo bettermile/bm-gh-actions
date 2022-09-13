@@ -1,0 +1,37 @@
+name: Github Packages
+
+on:
+  workflow_call:
+    secrets:
+      PKG_ACTOR:
+        required: true
+      PKG_TOKEN:
+        required: true
+
+jobs:
+  release:
+    runs-on: ubuntu-latest
+    timeout-minutes: 10
+
+    permissions:
+      contents: read
+      packages: write
+    env:
+      PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+      PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
+    steps:
+      - name: Checkout repo
+        uses: actions/checkout@v3
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 11
+          cache: gradle
+      - name: Build
+        run: ./gradlew clean build
+      - name: Get Release Tag
+        id: extract-tag
+        run: echo "::set-output name=tag::${GITHUB_REF#refs/*/}"
+      - name: Publish to GitHub Packages
+        run: ./gradlew publish -Pversion='${{ steps.extract-tag.outputs.tag }}'
