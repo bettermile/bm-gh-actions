@@ -1,0 +1,41 @@
+name: Stage S3 Download
+
+on:
+  workflow_call:
+    inputs:
+      AWS_REGION:
+        required: true
+        type: string
+      BUCKET_NAME:
+        required: true
+        type: string
+    secrets:
+      AWS_ACCESS_KEY_ID:
+        required: true
+      AWS_SECRET_ACCESS_KEY:
+        required: true
+
+jobs:
+  s3-down:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default Checkout
+        uses: actions/checkout@v3
+      - name: JDK - Setup
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+      - name: AWS - Setup
+        uses: aws-actions/configure-aws-credentials@v1
+        with:
+          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
+          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          aws-region: ${{ inputs.AWS_REGION }}
+      - name: AWS S3 - Download
+        run: aws s3 sync s3://${{ inputs.BUCKET_NAME }} ./src/main/resources/
+      - name: Cache node modules
+        uses: actions/cache@v2
+        with:
+          path: ./src/main/resources/
+          key: s3-download
