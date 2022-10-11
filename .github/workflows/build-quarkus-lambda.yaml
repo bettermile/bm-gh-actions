@@ -1,0 +1,27 @@
+name: Test and Build
+
+on:
+  workflow_call:
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    steps:
+    - name: checkout code
+      uses: actions/checkout@v3
+    - name: setup java
+      uses: actions/setup-java@v3
+      with:
+        distribution: 'temurin'
+        java-version: 11
+    - name: Set up Gradle
+      uses: gradle/gradle-build-action@v2
+    - name: Build Quarkus native
+      run: |
+        cd source
+        ../gradlew clean build -Dquarkus.package.type=native -Dquarkus.native.container-build=true
+    - name: Upload function artifact
+      uses: actions/upload-artifact@v3
+      with:
+        name: source-build
+        path: source/build/function.zip
