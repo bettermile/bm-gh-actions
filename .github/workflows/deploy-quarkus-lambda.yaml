@@ -18,7 +18,7 @@ on:
 
 jobs:
   deploy:
-    name: Deploy to ${{ env.STAGE_NAME }}
+    name: Deploy to ${{ inputs.STAGE_NAME }}
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v3
@@ -32,20 +32,20 @@ jobs:
         id: deployment
         with:
           token: ${{ github.token }}
-          environment: ${{ env.STAGE_NAME }}
+          environment: ${{ inputs.STAGE_NAME }}
       - name: Configure AWS
         uses: aws-actions/configure-aws-credentials@v1
         with:
-          role-to-assume: ${{ env.GITHUB_ROLE }}
-          aws-region: ${{ env.AWS_REGION }}
+          role-to-assume: ${{ inputs.GITHUB_ROLE }}
+          aws-region: ${{ inputs.AWS_REGION }}
       - name: Update pretoken function code, push new version, and update alias
         run: |
-          aws lambda update-function-code --function-name ${{ env.LAMBDA_NAME }} --zip-file fileb://./source/build/function.zip
-          aws lambda publish-version --function-name ${{ env.LAMBDA_NAME }} --description "${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
-          latestVersion=$( aws lambda list-versions-by-function --function-name ${{ env.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
+          aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./source/build/function.zip
+          aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description "${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
+          latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
           latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
           echo "The latest version number is $latestVersionNumber"
-          aws lambda update-alias --function-name ${{ env.LAMBDA_NAME }} --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
+          aws lambda update-alias --function-name ${{ inputs.LAMBDA_NAME }} --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
       - name: Update deployment status (success)
         if: success()
         uses: chrnorm/deployment-status@releases/v1
