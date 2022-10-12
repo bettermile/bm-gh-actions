@@ -20,6 +20,10 @@ jobs:
   deploy:
     name: Deploy to ${{ inputs.STAGE_NAME }}
     runs-on: ubuntu-latest
+    permissions:
+      actions: write
+      contents: read
+      id-token: write
     steps:
       - uses: actions/checkout@v3
       - name: Download source artifact
@@ -38,7 +42,7 @@ jobs:
         with:
           role-to-assume: ${{ inputs.GITHUB_ROLE }}
           aws-region: ${{ inputs.AWS_REGION }}
-      - name: Update pretoken function code, push new version, and update alias
+      - name: Update function code, push new version, and update alias
         run: |
           aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./source/build/function.zip
           aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description "${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
