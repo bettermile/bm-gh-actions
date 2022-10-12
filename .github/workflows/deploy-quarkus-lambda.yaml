@@ -19,17 +19,13 @@ on:
         required: true
         type: string
 
-permissions:
-  contents: read
-  deployments: write
-  id-token: write
-
 jobs:
   deploy:
     name: Deploy to ${{ inputs.STAGE_NAME }}
     runs-on: ubuntu-latest
     permissions:
       contents: read
+      deployments: write
       id-token: write
     steps:
       - uses: actions/checkout@v3
