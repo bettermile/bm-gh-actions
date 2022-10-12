@@ -16,14 +16,14 @@ on:
         required: true
         type: string
 
+permissions:
+  contents: read
+  id-token: write
+
 jobs:
   deploy:
     name: Deploy to ${{ inputs.STAGE_NAME }}
     runs-on: ubuntu-latest
-    permissions:
-      actions: write
-      contents: read
-      id-token: write
     steps:
       - uses: actions/checkout@v3
       - name: Download source artifact
