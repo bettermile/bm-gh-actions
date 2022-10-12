@@ -1,4 +1,4 @@
-name: Test and Build
+name: Test and Build Native Lambda
 
 on:
   workflow_call:
