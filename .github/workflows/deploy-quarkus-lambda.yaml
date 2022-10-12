@@ -53,7 +53,7 @@ jobs:
           latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
           latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
           echo "The latest version number is $latestVersionNumber"
-          aws lambda update-alias --function-name ${{ inputs.LAMBDA_NAME }} --name $ {{ inputs.LAMBDA_ALIAS }} --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
+          aws lambda update-alias --function-name ${{ inputs.LAMBDA_NAME }} --name ${{ inputs.LAMBDA_ALIAS }} --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
       - name: Update deployment status (success)
         if: success()
         uses: chrnorm/deployment-status@releases/v1
