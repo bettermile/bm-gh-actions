@@ -42,6 +42,7 @@ jobs:
         with:
           role-to-assume: ${{ inputs.GITHUB_ROLE }}
           aws-region: ${{ inputs.AWS_REGION }}
+          role-session-name: lambda-oidc
       - name: Update function code, push new version, and update alias
         run: |
           aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./source/build/function.zip
