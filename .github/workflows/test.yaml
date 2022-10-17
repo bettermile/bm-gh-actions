@@ -2,6 +2,11 @@ name: Stage Test
 
 on:
   workflow_call:
+    secrets:
+      PACKAGES_GITHUB_USERNAME:
+        required: true
+      PACKAGES_GITHUB_PASSWORD:
+        required: true
 
 jobs:
   test:
@@ -16,8 +21,5 @@ jobs:
           java-version: 11
           distribution: temurin
 
-      - name: Gradle - Setup
-        uses: gradle/gradle-build-action@v2
-
       - name: Gradle - Test
-        run: ./gradlew test
+        run: PACKAGES_GITHUB_USERNAME=${{ secrets.PACKAGES_GITHUB_USERNAME }} PACKAGES_GITHUB_PASSWORD=${{ secrets.PACKAGES_GITHUB_PASSWORD }} ./gradlew test

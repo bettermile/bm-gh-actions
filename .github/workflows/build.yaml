@@ -20,6 +20,10 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
+      PACKAGES_GITHUB_USERNAME:
+        required: true
+      PACKAGES_GITHUB_PASSWORD:
+        required: true
 
 jobs:
   build:
@@ -31,14 +35,11 @@ jobs:
       - name: JDK - Setup
         uses: actions/setup-java@v3
         with:
-          java-version: '11'
-          distribution: 'temurin'
-
-      - name: Gradle - Setup
-        uses: gradle/gradle-build-action@v2
+          java-version: 11
+          distribution: temurin
 
       - name: Gradle - Build
-        run: ./gradlew clean build -x test
+        run: PACKAGES_GITHUB_USERNAME=${{ secrets.PACKAGES_GITHUB_USERNAME }} PACKAGES_GITHUB_PASSWORD=${{ secrets.PACKAGES_GITHUB_PASSWORD }} ./gradlew clean build -x test
 
       - name: AWS - Setup
         uses: aws-actions/configure-aws-credentials@v1
@@ -55,5 +56,3 @@ jobs:
 
       - name: Docker ECR - Push
         run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
-  
-  
