@@ -3,9 +3,9 @@ name: Stage Test
 on:
   workflow_call:
     secrets:
-      PACKAGES_GITHUB_USERNAME:
+      PKG_ACTOR:
         required: true
-      PACKAGES_GITHUB_PASSWORD:
+      PKG_TOKEN:
         required: true
 
 jobs:
@@ -22,4 +22,4 @@ jobs:
           distribution: temurin
 
       - name: Gradle - Test
-        run: PACKAGES_GITHUB_USERNAME=${{ secrets.PACKAGES_GITHUB_USERNAME }} PACKAGES_GITHUB_PASSWORD=${{ secrets.PACKAGES_GITHUB_PASSWORD }} ./gradlew test
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test

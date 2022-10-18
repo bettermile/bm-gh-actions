@@ -18,9 +18,9 @@ on:
         required: true
       AWS_SECRET_ACCESS_KEY:
         required: true
-      PACKAGES_GITHUB_USERNAME:
+      PKG_ACTOR:
         required: true
-      PACKAGES_GITHUB_PASSWORD:
+      PKG_TOKEN:
         required: true
 
 jobs:
@@ -47,4 +47,4 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.AWS_REGION }}
       - name: Gradle - Test
-        run: PACKAGES_GITHUB_USERNAME=${{ secrets.PACKAGES_GITHUB_USERNAME }} PACKAGES_GITHUB_PASSWORD=${{ secrets.PACKAGES_GITHUB_PASSWORD }} AWS_REGION=${{ inputs.AWS_REGION }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=integration -PspringProfile=${{ inputs.SPRING_PROFILE }}
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} AWS_ACCESS_KEY_ID=${{ secrets.AWS_ACCESS_KEY_ID }} AWS_SECRET_ACCESS_KEY=${{ secrets.AWS_SECRET_ACCESS_KEY }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=integration -PspringProfile=${{ inputs.SPRING_PROFILE }}
