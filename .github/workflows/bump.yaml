@@ -5,9 +5,9 @@ on:
     secrets:
       RELEASE_GITHUB_TOKEN:
         required: true
-      PACKAGES_GITHUB_USERNAME:
+      PKG_ACTOR:
         required: true
-      PACKAGES_GITHUB_PASSWORD:
+      PKG_TOKEN:
         required: true
 
 jobs:
@@ -32,4 +32,4 @@ jobs:
           git push
           git tag "$(./gradlew -q getVersion)"
           git push --tags
-          PACKAGES_GITHUB_USERNAME=${{ secrets.PACKAGES_GITHUB_USERNAME }} PACKAGES_GITHUB_PASSWORD=${{ secrets.PACKAGES_GITHUB_PASSWORD }} ./gradlew publish
+          PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew publish
