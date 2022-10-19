@@ -1,10 +1,8 @@
-name: Stage Test
+name: Stage Bump
 
 on:
   workflow_call:
     secrets:
-      RELEASE_GITHUB_TOKEN:
-        required: true
       PKG_ACTOR:
         required: true
       PKG_TOKEN:
@@ -25,7 +23,7 @@ jobs:
         run: |
           git config --global user.name 'CI BOT'
           git config --global user.email 'ci-bot@noreply.com'
-          git remote set-url origin https://x-access-token:${{ secrets.RELEASE_GITHUB_TOKEN }}@github.com/$GITHUB_REPOSITORY
+          git remote set-url origin https://x-access-token:${{ secrets.PKG_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git checkout "${GITHUB_REF:11}"
           ./gradlew bumpVersion
           git commit -am "CI Bot - Bump version - $(./gradlew -q getVersion)"
