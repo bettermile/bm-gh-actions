@@ -24,6 +24,6 @@ jobs:
       - name: Documentation push
         run: |
           cd ./openapi
-          redocly bundle latest --output dist/latest.yaml
+          redocly bundle docs@latest --output dist/latest.yaml
           REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./dist/latest.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
           
