@@ -1,0 +1,29 @@
+name: Internal Documentation
+
+on:
+  workflow_call:
+    inputs:
+      RELEASE_TAG_VERSION:
+        required: true
+        type: string
+      PROJECT_TAG:
+        required: true
+        type: string
+    secrets:
+      REDOCLY_AUTHORIZATION:
+        required: true
+
+jobs:
+  documentation:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Default checkout
+        uses: actions/checkout@v3
+      - name: Install @redocly/cli
+        run: npm i -g @redocly/cli@latest
+      - name: Documentation push
+        run: |
+          cd ./openapi
+          redocly bundle latest --output dist/latest.yaml
+          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./dist/latest.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
+          
