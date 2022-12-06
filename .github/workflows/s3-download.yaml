@@ -6,7 +6,16 @@ on:
       AWS_REGION:
         required: true
         type: string
-      BUCKET_NAME:
+      SOURCE:
+        required: true
+        type: string
+      DESTINATION:
+        required: true
+        type: string
+      CACHE_PATH:
+        required: true
+        type: string
+      CACHE_KEY:
         required: true
         type: string
     secrets:
@@ -17,7 +26,7 @@ on:
 
 jobs:
   s3-down:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Default Checkout
         uses: actions/checkout@v3
@@ -33,9 +42,9 @@ jobs:
           aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
           aws-region: ${{ inputs.AWS_REGION }}
       - name: AWS S3 - Download
-        run: aws s3 sync s3://${{ inputs.BUCKET_NAME }} ./src/main/resources/
+        run: aws s3 sync ${{ inputs.SOURCE }} ${{ inputs.DESTINATION }}
       - name: Cache node modules
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          path: ./src/main/resources/
-          key: s3-download
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
