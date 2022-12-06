@@ -5,14 +5,14 @@ on:
 
 jobs:
   build:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
     - name: checkout code
       uses: actions/checkout@v3
     - name: setup java
       uses: actions/setup-java@v3
       with:
-        distribution: 'temurin'
+        distribution: temurin
         java-version: 11
     - name: Set up Gradle
       uses: gradle/gradle-build-action@v2

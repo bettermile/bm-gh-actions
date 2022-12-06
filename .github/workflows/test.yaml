@@ -10,16 +10,14 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-20.04
     steps:
       - name: Default Checkout
         uses: actions/checkout@v3
-
       - name: JDK - Setup
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: temurin
-
       - name: Gradle - Test
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test
