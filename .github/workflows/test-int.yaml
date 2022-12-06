@@ -31,7 +31,7 @@ on:
 
 jobs:
   test-int:
-    runs-on: ubuntu-latest-16-cores # Large runner running 20.04LTS
+    runs-on: ubuntu-20.04-16-cores
     steps:
       - name: Default Checkout
         uses: actions/checkout@v3
