@@ -13,6 +13,12 @@ on:
         required: true
         type: string
         default: default, test
+      CACHE_PATH:
+        required: false
+        type: string
+      CACHE_KEY:
+        required: false
+        type: string
     secrets:
       AWS_ACCESS_KEY_ID:
         required: true
@@ -25,16 +31,17 @@ on:
 
 jobs:
   test-int:
-    runs-on: ubuntu-latest
+    runs-on: ubuntu-latest-16-cores # Large runner running 20.04LTS
     steps:
       - name: Default Checkout
         uses: actions/checkout@v3
       - name: Cache Primes
+        if: ${{ inputs.CACHE_PATH != '' && inputs.CACHE_KEY != '' }}
         id: cache-primes
-        uses: actions/cache@v2
+        uses: actions/cache@v3
         with:
-          path: ./src/main/resources/
-          key: s3-download
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
       - name: JDK - Setup
         uses: actions/setup-java@v3
         with:
