@@ -9,6 +9,9 @@ on:
       PROJECT_TAG:
         required: true
         type: string
+      OPENAPI_DEFINITION_PATH:
+        required: false
+        type: string
     secrets:
       REDOCLY_AUTHORIZATION:
         required: true
@@ -23,6 +26,6 @@ jobs:
         run: npm i -g @redocly/cli@latest
       - name: Documentation push
         run: |
-          cd ./openapi
+          cd ${{ inputs.OPENAPI_DEFINITION_PATH || './openapi' }}
           redocly bundle external@latest --output dist/external.yaml
           REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./dist/external.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u

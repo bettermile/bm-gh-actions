@@ -2,6 +2,10 @@ name: Stage Documentation Test
 
 on:
   workflow_call:
+    inputs:
+      OPENAPI_DEFINITION_PATH:
+        required: false
+        type: string
 
 jobs:
   doc-test:
@@ -12,4 +16,4 @@ jobs:
       - name: Install @redocly/openapi
         run: npm i -g @redocly/cli@latest
       - name: Redocly Lint
-        run: redocly lint openapi/openapi.yaml
+        run: redocly lint ${{ inputs.OPENAPI_DEFINITION_PATH || './openapi' }}/openapi.yaml
