@@ -38,6 +38,13 @@ jobs:
           java-version: 11
           distribution: temurin
 
+      - name: Log in to GitHub's Container registry
+        uses: docker/login-action@f4ef78c080cd8ba55a85445d5b36e214a81df20a
+        with:
+          registry: ghcr.io
+          username: ${{ secrets.PKG_ACTOR }}
+          password: ${{ secrets.PKG_TOKEN }}
+
       - name: Gradle - Build
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew clean build -x test
 
