@@ -1,4 +1,4 @@
-name: DB Migration
+name: Stage Database Migration
 
 on:
   workflow_call:
