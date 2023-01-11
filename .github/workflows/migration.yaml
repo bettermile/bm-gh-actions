@@ -1,4 +1,4 @@
-name: Stage Migration
+name: Stage Database Migration
 
 on:
   workflow_call:
@@ -22,6 +22,9 @@ on:
         required: false
         type: string
       CACHE_KEY:
+        required: false
+        type: string
+      FLYWAY_VERSION:
         required: false
         type: string
     secrets:
@@ -48,19 +51,15 @@ jobs:
           path: ${{ inputs.CACHE_PATH }}
           key: ${{ inputs.CACHE_KEY }}
       - name: Install Flyway
-        run: wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/9.8.1/flyway-commandline-9.8.1-linux-x64.tar.gz | tar xvz && sudo ln -s `pwd`/flyway-9.8.1/flyway /usr/local/bin
+        run: |
+          VERSION=${{ inputs.FLYWAY_VERSION || '9.8.1' }}
+          wget -qO- https://repo1.maven.org/maven2/org/flywaydb/flyway-commandline/$VERSION/flyway-commandline-$VERSION-linux-x64.tar.gz | tar xvz && sudo ln -s `pwd`/flyway-$VERSION/flyway /usr/local/bin
       - name: Install SSH key
         uses: shimataro/ssh-key-action@v2
         with:
           key: ${{ secrets.SSH_KEY }}
           name: id_rsa
           known_hosts: unnecessary
-          config: |
-            Host bastion
-              User ec2-user
-              ProxyCommand sh -c "aws ssm start-session --target $(aws ssm describe-instance-information --filters "Key=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" | grep -o '"InstanceId": *"[^"]*' | grep -o '[^"]*$') --document-name AWS-StartSSHSession --parameters 'portNumber=%p'"
-              StrictHostKeyChecking no
-              UserKnownHostsFile=/dev/null
           if_key_exists: fail
       - name: AWS - Setup
         uses: aws-actions/configure-aws-credentials@v1-node16
@@ -72,8 +71,8 @@ jobs:
         shell: bash
         run: |
           export JAVA_ARGS="-Xmx32G"
-          INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" --query "Reservations[].Instances[?State.Name == 'running'].PublicIpAddress[]" --output text)
-          ssh -o "StrictHostKeyChecking no" ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N
+          INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[]" --output text)
+          ssh ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N -o StrictHostKeyChecking=no -o ProxyCommand="aws --region ${{ inputs.AWS_REGION }} ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p"
           flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
           flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" -baselineOnMigrate=true -outOfOrder=true migrate
           flyway -user="postgres" -password="${{ secrets.AWS_RDS_PASSWORD }}" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info

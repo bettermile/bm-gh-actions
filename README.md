@@ -7,5 +7,5 @@ You can use these shared github workflows but calling them from your project's w
 ```
 jobs:
   test:
-    uses: gls-ecl/bm-gh-actions/.github/workflows/test.yaml@main
+    uses: bettermile/bm-gh-actions/.github/workflows/test.yaml@main
 ```
