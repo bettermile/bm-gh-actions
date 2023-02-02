@@ -53,7 +53,7 @@ jobs:
           java-version: 11
           distribution: temurin
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@@v1
+        uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: arn:aws:iam::336519086291:role/GitHubActionsRole
           role-session-name: normalizertestint-oidc
