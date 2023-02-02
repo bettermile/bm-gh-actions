@@ -5,6 +5,8 @@ permissions:
 on:
   workflow_call:
     inputs:
+      GITHUB_ROLE:
+        required: true
       AWS_REGION:
         required: true
         type: string
@@ -53,10 +55,10 @@ jobs:
           java-version: 11
           distribution: temurin
       - name: Configure AWS Credentials
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@master
         with:
-          role-to-assume: arn:aws:iam::336519086291:role/GitHubActionsRole
-          role-session-name: normalizertestint-oidc
+          role-to-assume: arn:aws:iam::336519086291:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: normalizer-testint-oidc
           aws-region: ${{ inputs.AWS_REGION }}
       - name: Gradle - Test
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=${{ inputs.TEST_TYPE || 'integration' }} -PspringProfile=${{ inputs.SPRING_PROFILE }}
