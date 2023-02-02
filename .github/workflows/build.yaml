@@ -51,9 +51,9 @@ jobs:
         uses: aws-actions/configure-aws-credentials@master
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
-          role-session-name: normalizer-testint-oidc
+          role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
-
+          
       - name: AWS ECR - Setup
         uses: aws-actions/amazon-ecr-login@v1
 
