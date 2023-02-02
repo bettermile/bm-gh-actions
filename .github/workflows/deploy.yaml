@@ -3,6 +3,9 @@ name: Stage Deploy
 on:
   workflow_call:
     inputs:
+      GITHUB_ROLE:
+        required: true
+        type: string
       AWS_REGION:
         required: true
         type: string
@@ -15,11 +18,6 @@ on:
       AWS_SERVICE_NAME:
         required: true
         type: string
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
 
 jobs:
   deploy:
@@ -28,11 +26,11 @@ jobs:
       - name: Default Checkout
         uses: actions/checkout@v3
 
-      - name: AWS - Setup
-        uses: aws-actions/configure-aws-credentials@v1-node16
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@master
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: normalizer-testint-oidc
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: AWS ECS - Deploy
