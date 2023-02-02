@@ -1,5 +1,7 @@
 name: Stage Build
-
+permissions:
+  id-token: write
+  contents: read
 on:
   workflow_call:
     inputs:
@@ -53,7 +55,7 @@ jobs:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
           role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
-          
+
       - name: AWS ECR - Setup
         uses: aws-actions/amazon-ecr-login@v1
 

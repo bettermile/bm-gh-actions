@@ -1,5 +1,7 @@
 name: Stage Bump
-
+permissions:
+  id-token: write
+  contents: read
 on:
   workflow_call:
     secrets:
