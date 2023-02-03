@@ -58,8 +58,8 @@ jobs:
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@master
         with:
-          role-to-assume: arn:aws:iam::336519086291:role/${{ inputs.GITHUB_ROLE }}
-          role-session-name: normalizer-testint-oidc
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
       - name: Gradle - Test
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=${{ inputs.TEST_TYPE || 'integration' }} -PspringProfile=${{ inputs.SPRING_PROFILE }}
