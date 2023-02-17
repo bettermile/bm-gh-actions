@@ -41,7 +41,7 @@ jobs:
           token: ${{ github.token }}
           environment: ${{ inputs.STAGE_NAME }}
       - name: Configure AWS
-        uses: aws-actions/configure-aws-credentials@v1-node16
+        uses: aws-actions/configure-aws-credentials@v1.7.0
         with:
           role-to-assume: ${{ inputs.GITHUB_ROLE }}
           aws-region: ${{ inputs.AWS_REGION }}
