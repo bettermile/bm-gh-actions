@@ -70,11 +70,11 @@ jobs:
       - name: Run Flyway Migration
         shell: bash
         env:
-          DB_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
+          FLYWAY_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
         run: |
           export JAVA_ARGS="-Xmx32G"
           INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[]" --output text)
           ssh ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N -o StrictHostKeyChecking=no -o ProxyCommand="aws --region ${{ inputs.AWS_REGION }} ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p"
-          flyway -user="postgres" -password="$DB_PASSWORD" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
-          flyway -user="postgres" -password="$DB_PASSWORD" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" -baselineOnMigrate=true -outOfOrder=true migrate
-          flyway -user="postgres" -password="$DB_PASSWORD" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
+          flyway -user="postgres" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
+          flyway -user="postgres" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" -baselineOnMigrate=true -outOfOrder=true migrate
+          flyway -user="postgres" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
