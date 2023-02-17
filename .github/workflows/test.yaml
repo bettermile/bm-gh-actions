@@ -23,7 +23,7 @@ jobs:
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test
 
       - name: Generate JaCoCo Badge
-        if: github.actor != 'dependabot[bot]' && github.event_name != 'pull_request'
+        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
         id: jacoco
         uses: cicirello/jacoco-badge-generator@5ab92f938f700567f8b2afed4ca37978aee498a4
         with:
@@ -33,7 +33,7 @@ jobs:
           coverage-badge-filename: jacoco-coverage.svg
 
       - name: Log coverage percentage
-        if: github.actor != 'dependabot[bot]' && github.event_name != 'pull_request'
+        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
         run: |
           echo github.actor != 'dependabot[bot]'
           echo "coverage = ${{ steps.jacoco.outputs.coverage }}"
@@ -45,7 +45,7 @@ jobs:
           add: '*.svg'
 
       - name: Add coverage to PR
-        if: github.actor != 'dependabot[bot]' && github.event_name != 'pull_request'
+        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
         uses: madrapps/jacoco-report@d87b949542d04aac2e6b150840948eac77ae62be
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
