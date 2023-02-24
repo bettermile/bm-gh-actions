@@ -8,7 +8,7 @@ updates:
           
     - package-ecosystem: "github-actions"
       directory: "/"
-      target-branch: "feature/oidc-implementation"
+      target-branch: "feature/platform-compliance"
       schedule:
           interval: "monthly"
           
