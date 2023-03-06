@@ -32,10 +32,15 @@ on:
         required: false
         type: string
         default: ''
+      TIMEOUT:
+        required: false
+        type: number
+        default: 30
 
 jobs:
   deploy:
     runs-on: ubuntu-20.04
+    timeout-minutes: ${{ inputs.TIMEOUT }}
     steps:
       - name: Default Checkout
         uses: actions/checkout@v3
@@ -54,7 +59,7 @@ jobs:
         if: inputs.WAIT_UNTIL_STABLE
         run: |
           echo "[INFO] Waiting for ECS service to reach stable state."
-          local status=$?
+          status=0
           for i in {1..3}; do
             aws ecs wait services-stable --cluster ${{ inputs.AWS_CLUSTER_NAME }} --service ${{ inputs.AWS_SERVICE_NAME }} && break || status=$? && sleep 0.1
           done
