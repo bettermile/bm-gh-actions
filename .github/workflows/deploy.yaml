@@ -2,6 +2,7 @@ name: Stage Deploy
 permissions:
   id-token: write
   contents: read
+  deployments: write
 on:
   workflow_call:
     inputs:
