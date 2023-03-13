@@ -20,7 +20,7 @@ on:
       SPRING_PROFILE:
         required: false
         type: string
-        default: default, test
+        default: test
       CACHE_PATH:
         required: false
         type: string
