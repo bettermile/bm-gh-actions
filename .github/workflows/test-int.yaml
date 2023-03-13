@@ -18,7 +18,7 @@ on:
         required: true
         type: string
       SPRING_PROFILE:
-        required: true
+        required: false
         type: string
         default: default, test
       CACHE_PATH:
