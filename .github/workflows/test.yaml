@@ -4,11 +4,7 @@ permissions:
   contents: read
 on:
   workflow_call:
-    secrets:
-      PKG_ACTOR:
-        required: true
-      PKG_TOKEN:
-        required: true
+    inputs:
       GITHUB_ROLE:
         required: true
         type: string
@@ -18,6 +14,12 @@ on:
       AWS_ACCOUNT_ID:
         required: true
         type: string
+    secrets:
+      PKG_ACTOR:
+        required: true
+      PKG_TOKEN:
+        required: true
+
 jobs:
   test:
     runs-on: ubuntu-20.04
