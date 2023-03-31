@@ -10,13 +10,13 @@ on:
         type: boolean
         default: false
       GITHUB_ROLE:
-        required: true
+        required: false
         type: string
       AWS_REGION:
-        required: true
+        required: false
         type: string
       AWS_ACCOUNT_ID:
-        required: true
+        required: false
         type: string
     secrets:
       PKG_ACTOR:
