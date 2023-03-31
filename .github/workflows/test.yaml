@@ -1,7 +1,23 @@
 name: Stage Test
-
+permissions:
+  id-token: write
+  contents: read
 on:
   workflow_call:
+    inputs:
+      CONFIGURE_AWS:
+        required: false
+        type: boolean
+        default: false
+      GITHUB_ROLE:
+        required: false
+        type: string
+      AWS_REGION:
+        required: false
+        type: string
+      AWS_ACCOUNT_ID:
+        required: false
+        type: string
     secrets:
       PKG_ACTOR:
         required: true
@@ -19,7 +35,13 @@ jobs:
         with:
           java-version: 11
           distribution: temurin
-
+      - name: Configure AWS Credentials
+        if: inputs.CONFIGURE_AWS
+        uses: aws-actions/configure-aws-credentials@master
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
+          aws-region: ${{ inputs.AWS_REGION }}
       - name: Gradle - Test
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test
 
