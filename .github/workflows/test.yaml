@@ -49,7 +49,7 @@ jobs:
       - name: Generate JaCoCo Badge
         if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
         id: jacoco
-        uses: cicirello/jacoco-badge-generator@5ab92f938f700567f8b2afed4ca37978aee498a4
+        uses: cicirello/jacoco-badge-generator@c9370c1d09e8c14ee86d5a6599b0d4781c7bee4d
         with:
           jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
           badges-directory: .
