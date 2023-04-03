@@ -1,8 +1,18 @@
 name: Stage Deploy
-
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
 on:
   workflow_call:
     inputs:
+      GITHUB_ROLE:
+        required: true
+        type: string
+      ROLE_SESSION_NAME:
+        required: false
+        type: string
+        default: normalizer-testint-oidc
       AWS_REGION:
         required: true
         type: string
@@ -15,25 +25,63 @@ on:
       AWS_SERVICE_NAME:
         required: true
         type: string
-    secrets:
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
+      WAIT_UNTIL_STABLE:
+        required: false
+        type: boolean
+        default: false
+      DEPLOYMENT_ID:
+        required: false
+        type: string
+        default: ''
+      TIMEOUT:
+        required: false
+        type: number
+        default: 30
 
 jobs:
   deploy:
     runs-on: ubuntu-20.04
+    timeout-minutes: ${{ inputs.TIMEOUT }}
     steps:
       - name: Default Checkout
         uses: actions/checkout@v3
 
-      - name: AWS - Setup
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: ${{ inputs.ROLE_SESSION_NAME }} 
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: AWS ECS - Deploy
         run: aws ecs update-service --force-new-deployment --cluster ${{ inputs.AWS_CLUSTER_NAME }} --service ${{ inputs.AWS_SERVICE_NAME }}
+
+      - name: AWS ECS - Await Stable State
+        if: inputs.WAIT_UNTIL_STABLE
+        run: |
+          echo "[INFO] Waiting for ECS service to reach stable state."
+          status=0
+          for i in {1..3}; do
+            aws ecs wait services-stable --cluster ${{ inputs.AWS_CLUSTER_NAME }} --service ${{ inputs.AWS_SERVICE_NAME }} && break || status=$? && sleep 0.1
+          done
+          if [ $status -ne 0 ]; then
+            echo "[ERROR] ECS service didn't reach stable state after 3 retries."
+            exit $status
+          fi
+          echo "[INFO] ECS service reached stable state."
+
+      - name: Update deployment status (success)
+        if: success() && inputs.DEPLOYMENT_ID != ''
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          state: success
+          deployment-id: ${{ inputs.DEPLOYMENT_ID }}
+
+      - name: Update deployment status (failure)
+        if: failure() && inputs.DEPLOYMENT_ID != ''
+        uses: chrnorm/deployment-status@v2
+        with:
+          token: ${{ github.token }}
+          state: failure
+          deployment-id: ${{ inputs.DEPLOYMENT_ID }}

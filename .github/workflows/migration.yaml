@@ -1,9 +1,17 @@
 name: Stage Database Migration
-
+permissions:
+  id-token: write
+  contents: read
 on:
   workflow_call:
     inputs:
+      GITHUB_ROLE:
+        required: true
+        type: string
       AWS_REGION:
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
         required: true
         type: string
       AWS_RDS_DATABASE:
@@ -32,10 +40,6 @@ on:
         required: true
       AWS_RDS_PASSWORD:
         required: true
-      AWS_ACCESS_KEY_ID:
-        required: true
-      AWS_SECRET_ACCESS_KEY:
-        required: true
 
 jobs:
   migration:
@@ -61,11 +65,11 @@ jobs:
           name: id_rsa
           known_hosts: unnecessary
           if_key_exists: fail
-      - name: AWS - Setup
+      - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
-          aws-access-key-id: ${{ secrets.AWS_ACCESS_KEY_ID }}
-          aws-secret-access-key: ${{ secrets.AWS_SECRET_ACCESS_KEY }}
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
       - name: Run Flyway Migration
         shell: bash
