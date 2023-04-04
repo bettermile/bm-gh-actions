@@ -1,21 +1,19 @@
 name: Stage Test
+
 permissions:
   id-token: write
   contents: read
-  pull-requests: write
+
 on:
   workflow_call:
     inputs:
-      CONFIGURE_AWS:
-        required: false
-        type: boolean
-        default: false
       GITHUB_ROLE:
         required: false
         type: string
       AWS_REGION:
         required: false
         type: string
+        default: eu-central-1
       AWS_ACCOUNT_ID:
         required: false
         type: string
@@ -29,44 +27,23 @@ jobs:
   test:
     runs-on: ubuntu-20.04
     steps:
+
       - name: Default Checkout
         uses: actions/checkout@v3
+
       - name: JDK - Setup
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: temurin
+
       - name: Configure AWS Credentials
-        if: inputs.CONFIGURE_AWS
+        if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
         uses: aws-actions/configure-aws-credentials@master
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
           role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
+
       - name: Gradle - Test
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test
-
-      - name: Generate JaCoCo Badge
-        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
-        id: jacoco
-        uses: cicirello/jacoco-badge-generator@5ab92f938f700567f8b2afed4ca37978aee498a4
-        with:
-          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
-          badges-directory: .
-          generate-coverage-badge: true
-          coverage-badge-filename: jacoco-coverage.svg
-
-      - uses: EndBug/add-and-commit@8c12ff729a98cfbcd3fe38b49f55eceb98a5ec02
-        with:
-          default_author: github_actions
-          message: 'Commit Jacoco coverage badge'
-          add: '*.svg'
-
-      - name: Add coverage to PR
-        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
-        uses: madrapps/jacoco-report@d87b949542d04aac2e6b150840948eac77ae62be
-        with:
-          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
-          token: ${{ secrets.GITHUB_TOKEN }}
-          title: "Test Coverage Report"
-          update-comment: true

@@ -4,8 +4,9 @@ on:
   workflow_call:
     inputs:
       AWS_REGION:
-        required: true
+        required: false
         type: string
+        default: eu-central-1
       LAMBDA_ALIAS:
         required: true
         type: string

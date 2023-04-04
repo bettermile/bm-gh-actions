@@ -1,7 +1,9 @@
 name: Stage S3 Download
+
 permissions:
   id-token: write
   contents: read
+
 on:
   workflow_call:
     inputs:
@@ -12,8 +14,9 @@ on:
         required: true
         type: string
       AWS_REGION:
-        required: true
+        required: false
         type: string
+        default: eu-central-1
       SOURCE:
         required: true
         type: string
@@ -31,21 +34,27 @@ jobs:
   s3-down:
     runs-on: ubuntu-20.04
     steps:
+
       - name: Default Checkout
         uses: actions/checkout@v3
+
       - name: JDK - Setup
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: temurin
+
       - name: Configure AWS Credentials
+        if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
         uses: aws-actions/configure-aws-credentials@master
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
           role-session-name: normalizer-testint-oidc
           aws-region: ${{ inputs.AWS_REGION }}
+
       - name: AWS S3 - Download
         run: aws s3 sync ${{ inputs.SOURCE }} ${{ inputs.DESTINATION }}
+
       - name: Cache node modules
         uses: actions/cache@v3
         with:

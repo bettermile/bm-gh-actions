@@ -1,7 +1,9 @@
 name: Stage Integration Test
+
 permissions:
   id-token: write
   contents: read
+
 on:
   workflow_call:
     inputs:
@@ -12,8 +14,9 @@ on:
         required: true
         type: string
       AWS_REGION:
-        required: true
+        required: false
         type: string
+        default: eu-central-1
       TEST_TARGET:
         required: true
         type: string
@@ -30,6 +33,7 @@ on:
       TEST_TYPE:
         required: false
         type: string
+        default: integration
     secrets:
       PKG_ACTOR:
         required: true
@@ -40,8 +44,10 @@ jobs:
   test-int:
     runs-on: ubuntu-20.04-4-cores
     steps:
+
       - name: Default Checkout
         uses: actions/checkout@v3
+
       - name: Cache Primes
         if: ${{ inputs.CACHE_PATH != '' && inputs.CACHE_KEY != '' }}
         id: cache-primes
@@ -49,16 +55,20 @@ jobs:
         with:
           path: ${{ inputs.CACHE_PATH }}
           key: ${{ inputs.CACHE_KEY }}
+
       - name: JDK - Setup
         uses: actions/setup-java@v3
         with:
           java-version: 11
           distribution: temurin
+
       - name: Configure AWS Credentials
+        if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
         uses: aws-actions/configure-aws-credentials@master
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
           role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
+
       - name: Gradle - Test
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=${{ inputs.TEST_TYPE || 'integration' }} -PspringProfile=${{ inputs.SPRING_PROFILE }}
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=${{ inputs.TEST_TYPE }} -PspringProfile=${{ inputs.SPRING_PROFILE }}

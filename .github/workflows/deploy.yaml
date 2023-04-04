@@ -1,8 +1,10 @@
 name: Stage Deploy
+
 permissions:
   id-token: write
   contents: read
   deployments: write
+
 on:
   workflow_call:
     inputs:
@@ -14,8 +16,9 @@ on:
         type: string
         default: normalizer-testint-oidc
       AWS_REGION:
-        required: true
+        required: false
         type: string
+        default: eu-central-1
       AWS_ACCOUNT_ID:
         required: true
         type: string
@@ -43,14 +46,16 @@ jobs:
     runs-on: ubuntu-20.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
     steps:
+
       - name: Default Checkout
         uses: actions/checkout@v3
 
       - name: Configure AWS Credentials
+        if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
         uses: aws-actions/configure-aws-credentials@v1-node16
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
-          role-session-name: ${{ inputs.ROLE_SESSION_NAME }} 
+          role-session-name: ${{ inputs.ROLE_SESSION_NAME }}
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: AWS ECS - Deploy
