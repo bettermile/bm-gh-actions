@@ -46,4 +46,4 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test --info

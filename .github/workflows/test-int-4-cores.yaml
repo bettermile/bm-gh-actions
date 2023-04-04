@@ -71,4 +71,4 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} ./gradlew test --tests ${{ inputs.TEST_TARGET }} -PtestType=${{ inputs.TEST_TYPE }} -PspringProfile=${{ inputs.SPRING_PROFILE }}
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} AWS_REGION=${{ inputs.AWS_REGION }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }} -PtestType=${{ inputs.TEST_TYPE }} -PspringProfile=${{ inputs.SPRING_PROFILE }}
