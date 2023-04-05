@@ -1,0 +1,63 @@
+name: Stage Coverage Badge
+
+on:
+  workflow_call:
+    inputs:
+      CACHE_PATH:
+        required: false
+        type: string
+      CACHE_KEY:
+        required: false
+        type: string
+
+jobs:
+  report:
+    runs-on: ubuntu-20.04
+    steps:
+
+      - name: Default Checkout
+        uses: actions/checkout@v3
+
+      - name: JDK - Setup
+        uses: actions/setup-java@v3
+        with:
+          java-version: 11
+          distribution: temurin
+
+      - name: Cache Primes
+        if: ${{ inputs.CACHE_PATH != '' && inputs.CACHE_KEY != '' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
+
+      - name: Generate JaCoCo Badge
+        id: jacoco
+        uses: cicirello/jacoco-badge-generator@v2.8.1
+        with:
+          jacoco-csv-file: build/reports/jacoco/test/jacocoTestReport.csv
+          badges-directory: .
+          generate-coverage-badge: true
+          coverage-badge-filename: jacoco-coverage.svg
+
+      - name: Upload JaCoCo coverage report
+        uses: actions/upload-artifact@v2
+        with:
+          name: jacoco-report
+          path: target/site/jacoco/
+
+      - uses: EndBug/add-and-commit@v9.1.1
+        with:
+          committer_name: CI BOT
+          committer_email: ci-bot@noreply.com
+          message: Update Coverage Badge
+          add: '*.svg'
+
+      - name: Add coverage to PR
+        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
+        uses: madrapps/jacoco-report@v1.3
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Test Coverage Report
+          update-comment: true

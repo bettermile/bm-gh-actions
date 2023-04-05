@@ -1,9 +1,5 @@
 name: Stage Test
 
-permissions:
-  id-token: write
-  contents: read
-
 on:
   workflow_call:
     inputs:
@@ -16,6 +12,12 @@ on:
         default: eu-central-1
       AWS_ACCOUNT_ID:
         required: false
+        type: string
+      CACHE_PATH:
+        required: true
+        type: string
+      CACHE_KEY:
+        required: true
         type: string
     secrets:
       PKG_ACTOR:
@@ -47,3 +49,10 @@ jobs:
 
       - name: Gradle - Test
         run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test --info
+
+      - name: Cache node modules
+        if: ${{ inputs.CACHE_PATH != '' && inputs.CACHE_KEY != '' }}
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
