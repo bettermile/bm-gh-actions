@@ -25,6 +25,7 @@ jobs:
           git config --global user.email 'ci-bot@noreply.com'
           git remote set-url origin https://x-access-token:${{ secrets.PKG_TOKEN }}@github.com/$GITHUB_REPOSITORY
           git checkout "${GITHUB_REF:11}"
+          git pull origin "${GITHUB_REF:11}"
           ./gradlew bumpVersion
           git commit -am "CI Bot - Bump version - $(./gradlew -q getVersion)"
           git push
