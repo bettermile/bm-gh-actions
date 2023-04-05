@@ -34,6 +34,10 @@ on:
         required: false
         type: string
         default: integration
+      RUNNER:
+        required: false
+        type: string
+        default: ubuntu-20.04
     secrets:
       PKG_ACTOR:
         required: true
@@ -42,7 +46,7 @@ on:
 
 jobs:
   test-int:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ inputs.runner }}
     steps:
 
       - name: Default Checkout
