@@ -47,6 +47,7 @@ jobs:
           path: target/site/jacoco/
 
       - uses: EndBug/add-and-commit@v9.1.1
+        if: github.event_name != 'pull_request'
         with:
           committer_name: CI BOT
           committer_email: ci-bot@noreply.com
@@ -54,7 +55,7 @@ jobs:
           add: '*.svg'
 
       - name: Add coverage to PR
-        if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
+        if: github.event_name == 'pull_request'
         uses: madrapps/jacoco-report@v1.3
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
