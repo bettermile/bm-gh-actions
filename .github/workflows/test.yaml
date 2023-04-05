@@ -14,10 +14,10 @@ on:
         required: false
         type: string
       CACHE_PATH:
-        required: true
+        required: false
         type: string
       CACHE_KEY:
-        required: true
+        required: false
         type: string
     secrets:
       PKG_ACTOR:
