@@ -1,5 +1,9 @@
 name: Stage Test
 
+permissions:
+  id-token: write
+  contents: read
+
 on:
   workflow_call:
     inputs:
@@ -13,12 +17,26 @@ on:
       AWS_ACCOUNT_ID:
         required: false
         type: string
-      CACHE_PATH:
+      CACHE_PATH_OUTPUT:
         required: false
         type: string
-      CACHE_KEY:
+      CACHE_KEY_OUTPUT:
         required: false
         type: string
+      CACHE_PATH_INPUT:
+        required: false
+        type: string
+      CACHE_KEY_INPUT:
+        required: false
+        type: string
+      TEST_TARGET:
+        required: false
+        type: string
+        default: "*"
+      RUNNER:
+        required: false
+        type: string
+        default: ubuntu-20.04
     secrets:
       PKG_ACTOR:
         required: true
@@ -27,11 +45,19 @@ on:
 
 jobs:
   test:
-    runs-on: ubuntu-20.04
+    runs-on: ${{ inputs.runner }}
     steps:
 
       - name: Default Checkout
         uses: actions/checkout@v3
+
+      - name: Cache Primes
+        if: ${{ inputs.CACHE_PATH_INPUT != '' && inputs.CACHE_KEY_INPUT != '' }}
+        id: cache-primes
+        uses: actions/cache@v3
+        with:
+          path: ${{ inputs.CACHE_PATH_INPUT }}
+          key: ${{ inputs.CACHE_KEY_INPUT }}
 
       - name: JDK - Setup
         uses: actions/setup-java@v3
@@ -48,11 +74,11 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test --info
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
 
       - name: Cache node modules
-        if: ${{ inputs.CACHE_PATH != '' && inputs.CACHE_KEY != '' }}
+        if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
         uses: actions/cache@v3
         with:
-          path: ${{ inputs.CACHE_PATH }}
-          key: ${{ inputs.CACHE_KEY }}
+          path: ${{ inputs.CACHE_PATH_OUTPUT }}
+          key: ${{ inputs.CACHE_KEY_OUTPUT }}
