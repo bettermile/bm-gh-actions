@@ -28,4 +28,5 @@ jobs:
         run: |
           cd ${{ inputs.OPENAPI_DEFINITION_PATH || './openapi' }}
           redocly bundle ${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }} --output dist/${{ inputs.RELEASE_TAG_VERSION }}.yaml
-          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./dist/${{ inputs.RELEASE_TAG_VERSION }}.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
+          cd dist
+          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./${{ inputs.RELEASE_TAG_VERSION }}.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
