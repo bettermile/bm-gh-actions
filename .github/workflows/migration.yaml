@@ -38,7 +38,7 @@ on:
       FLYWAY_VERSION:
         required: false
         type: string
-        default: 9.8.1
+        default: 9.21.1
       RUNNER:
         required: false
         type: string
@@ -89,11 +89,18 @@ jobs:
       - name: Run Flyway Migration
         shell: bash
         env:
+          JAVA_ARGS: -Xmx4G
+          FLYWAY_EDITION: Community
+          FLYWAY_URL: jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}
+          FLYWAY_USER: postgres
           FLYWAY_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
+          FLYWAY_SCHEMAS: ${{ inputs.AWS_RDS_SCHEMA || 'public' }}
+          FLYWAY_BASELINE_ON_MIGRATE: false
+          FLYWAY_OUT_OF_ORDER: false
+          FLYWAY_LOCATIONS: /src/main/resources/db/migration
         run: |
-          export JAVA_ARGS="-Xmx32G"
           INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[]" --output text)
           ssh ec2-user@$INSTANCE_ID -L 5432:${{ inputs.AWS_RDS }}:5432 -f -N -o StrictHostKeyChecking=no -o ProxyCommand="aws --region ${{ inputs.AWS_REGION }} ssm start-session --target %h --document-name AWS-StartSSHSession --parameters portNumber=%p"
-          flyway -user="postgres" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
-          flyway -user="postgres" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" -baselineOnMigrate=true -outOfOrder=true migrate
-          flyway -user="postgres" -locations="/src/main/resources/db/migration" -url="jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}?sslmode=require&sslrootcert=rds-combined-ca-bundle.pem" -schemas="${{ inputs.AWS_RDS_SCHEMA || 'public' }}" info
+          flyway info
+          flyway migrate
+          flyway info
