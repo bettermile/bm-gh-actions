@@ -1,0 +1,74 @@
+name: Deploy BackOffice Lambda
+
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
+on:
+  workflow_call:
+    inputs:
+      LAMBDA_NAME:
+        required: true
+        type: string
+      ENVIRONMENT_NAME:
+        required: true
+        type: string
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      PROJECT_SHORT_NAME:
+        required: true
+        type: string
+      AWS_REGION:
+        required: true
+        type: string
+        default: eu-central-1
+
+jobs:
+  deploy-lambda:
+    name: Deploy to input environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download source artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: source-build
+          path: source/build/libs
+      - name: Create GitHub deployment
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          environment: ${{ inputs.ENVIRONMENT_NAME }}
+      - name: Configure AWS Credentials
+        if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.PROJECT_SHORT_NAME }}GitHubAssumeRole
+          role-session-name: ${{ inputs.LAMBDA_NAME }}-oidc
+          aws-region: ${{ inputs.AWS_REGION }}
+      - name: Update source function code, push new version, and update alias
+        run: |
+          aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./source/build/libs/source-all.jar
+          sleep 5
+          aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description "${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
+          latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
+          latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
+          echo "The latest version number is $latestVersionNumber"
+          aws lambda update-alias --function-name ${{ inputs.LAMBDA_NAME }} --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          state: success
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          state: failure
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}

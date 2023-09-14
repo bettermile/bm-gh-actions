@@ -1,0 +1,31 @@
+name: Build BackOffice Lambda
+
+on:
+  workflow_call:
+    inputs:
+      SOURCE_DIRECTORY_NAME:
+        required: false
+        type: string
+        default: source
+jobs:
+  build:
+    name: Build lambda
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: 'temurin'
+          java-version: 11
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2.8.0
+      - name: Build source lambda
+        run: |
+          cd ${{ inputs.SOURCE_DIRECTORY_NAME }}
+          ../gradlew clean build shadowJar
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.SOURCE_DIRECTORY_NAME }}-build
+          path: ${{ inputs.SOURCE_DIRECTORY_NAME }}/build/libs/source-all.jar
