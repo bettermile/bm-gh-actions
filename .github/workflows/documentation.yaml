@@ -9,6 +9,9 @@ on:
       PROJECT_TAG:
         required: true
         type: string
+      DESTINATION_TAG:
+        required: false
+        type: string
       OPENAPI_DEFINITION_PATH:
         required: false
         type: string
@@ -27,6 +30,6 @@ jobs:
       - name: Documentation push
         run: |
           cd ${{ inputs.OPENAPI_DEFINITION_PATH || './openapi' }}
-          redocly bundle ${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }} --output dist/${{ inputs.RELEASE_TAG_VERSION }}.yaml
+          redocly bundle ${{ inputs.PROJECT_TAG }}@${{ inputs.DESTINATION_TAG || inputs.RELEASE_TAG_VERSION }} --output dist/${{ inputs.RELEASE_TAG_VERSION }}.yaml
           cd dist
-          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./${{ inputs.RELEASE_TAG_VERSION }}.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
+          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./${{ inputs.RELEASE_TAG_VERSION }}.yaml --organization="bettermile" --destination="${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
