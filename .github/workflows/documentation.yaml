@@ -3,11 +3,15 @@ name: Stage Documentation
 on:
   workflow_call:
     inputs:
-      RELEASE_TAG_VERSION:
-        required: true
-        type: string
       PROJECT_TAG:
         required: true
+        type: string
+      SOURCE_TAG:
+        required: true
+        type: string
+      DESTINATION_TAG:
+        required: false
+        description: If not set, SOURCE_TAG will be used as DESTINATION_TAG as well
         type: string
       OPENAPI_DEFINITION_PATH:
         required: false
@@ -27,6 +31,6 @@ jobs:
       - name: Documentation push
         run: |
           cd ${{ inputs.OPENAPI_DEFINITION_PATH || './openapi' }}
-          redocly bundle ${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }} --output dist/${{ inputs.RELEASE_TAG_VERSION }}.yaml
+          redocly bundle ${{ inputs.PROJECT_TAG }}@${{ inputs.SOURCE_TAG }} --output dist/${{ inputs.SOURCE_TAG }}.yaml
           cd dist
-          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./${{ inputs.RELEASE_TAG_VERSION }}.yaml "@bettermile/${{ inputs.PROJECT_TAG }}@${{ inputs.RELEASE_TAG_VERSION }}" -u
+          REDOCLY_AUTHORIZATION=${{ secrets.REDOCLY_AUTHORIZATION }} redocly push ./${{ inputs.SOURCE_TAG }}.yaml --organization="bettermile" --destination="${{ inputs.PROJECT_TAG }}@${{ inputs.DESTINATION_TAG || inputs.SOURCE_TAG  }}" -u
