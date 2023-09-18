@@ -24,6 +24,10 @@ on:
         required: true
         type: string
         default: eu-central-1
+      BUILD_DIRECTORY_NAME:
+        required: false
+        type: string
+        default: source
 
 jobs:
   deploy-lambda:
@@ -34,8 +38,8 @@ jobs:
       - name: Download source artifact
         uses: actions/download-artifact@v3
         with:
-          name: source-build
-          path: source/build/libs
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
+          path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs
       - name: Create GitHub deployment
         uses: chrnorm/deployment-action@v2
         id: deployment
@@ -43,7 +47,6 @@ jobs:
           token: ${{ github.token }}
           environment: ${{ inputs.ENVIRONMENT_NAME }}
       - name: Configure AWS Credentials
-        if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
         uses: aws-actions/configure-aws-credentials@v4
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.PROJECT_SHORT_NAME }}GitHubAssumeRole
@@ -51,9 +54,9 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
       - name: Update source function code, push new version, and update alias
         run: |
-          aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./source/build/libs/source-all.jar
+          aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}-all.jar
           sleep 5
-          aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description "${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
+          aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description "${{ github.event.release.name }}"
           latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
           latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
           echo "The latest version number is $latestVersionNumber"

@@ -3,7 +3,7 @@ name: Build BackOffice Lambda
 on:
   workflow_call:
     inputs:
-      SOURCE_DIRECTORY_NAME:
+      BUILD_DIRECTORY_NAME:
         required: false
         type: string
         default: source
@@ -22,10 +22,10 @@ jobs:
         uses: gradle/gradle-build-action@v2.8.0
       - name: Build source lambda
         run: |
-          cd ${{ inputs.SOURCE_DIRECTORY_NAME }}
+          cd ${{ inputs.BUILD_DIRECTORY_NAME }}
           ../gradlew clean build shadowJar
       - name: Upload source artifact
         uses: actions/upload-artifact@v3
         with:
-          name: ${{ inputs.SOURCE_DIRECTORY_NAME }}-build
-          path: ${{ inputs.SOURCE_DIRECTORY_NAME }}/build/libs/source-all.jar
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
+          path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}-all.jar
