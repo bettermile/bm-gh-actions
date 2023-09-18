@@ -11,6 +11,7 @@ on:
         type: string
       DESTINATION_TAG:
         required: false
+        description: If not set, SOURCE_TAG will be used as DESTINATION_TAG as well
         type: string
       OPENAPI_DEFINITION_PATH:
         required: false
