@@ -7,6 +7,9 @@ on:
         required: false
         type: string
         default: source
+      JAVA_VERSION:
+        required: true
+        type: string
 jobs:
   build:
     name: Build lambda
@@ -17,7 +20,7 @@ jobs:
         uses: actions/setup-java@v3
         with:
           distribution: 'temurin'
-          java-version: 11
+          java-version: ${{ inputs.JAVA_VERSION }}
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2.8.0
       - name: Build source lambda
