@@ -1,15 +1,23 @@
-name: Build BackOffice Lambda
+name: Build JVM Lambda
 
 on:
   workflow_call:
     inputs:
+      JAVA_VERSION:
+        required: true
+        type: string
       BUILD_DIRECTORY_NAME:
         required: false
         type: string
         default: source
-      JAVA_VERSION:
-        required: true
+      GRADLE_COMMAND:
+        required: false
         type: string
+        default: clean build
+      JAR_FILE_EXTENSION:
+        required: false
+        type: string
+        default: .jar
 jobs:
   build:
     name: Build lambda
@@ -26,9 +34,9 @@ jobs:
       - name: Build source lambda
         run: |
           cd ${{ inputs.BUILD_DIRECTORY_NAME }}
-          ../gradlew clean build shadowJar
+          ../gradlew ${{ inputs.GRADLE_COMMAND }}
       - name: Upload source artifact
         uses: actions/upload-artifact@v3
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
-          path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}-all.jar
+          path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION}}
