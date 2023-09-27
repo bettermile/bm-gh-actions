@@ -6,6 +6,9 @@ on:
       JAVA_VERSION:
         required: true
         type: string
+      JAVA_DISTRIBUTION:
+        required: true
+        type: string
       BUILD_DIRECTORY_NAME:
         required: false
         type: string
@@ -27,7 +30,7 @@ jobs:
       - name: Set up Java
         uses: actions/setup-java@v3
         with:
-          distribution: 'temurin'
+          distribution: ${{ inputs.JAVA_DISTRIBUTION }}
           java-version: ${{ inputs.JAVA_VERSION }}
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2.8.0
