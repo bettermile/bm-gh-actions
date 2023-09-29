@@ -1,0 +1,45 @@
+name: Build JVM Lambda
+
+on:
+  workflow_call:
+    inputs:
+      JAVA_VERSION:
+        required: true
+        type: string
+      JAVA_DISTRIBUTION:
+        required: true
+        type: string
+      BUILD_DIRECTORY_NAME:
+        required: false
+        type: string
+        default: source
+      GRADLE_COMMAND:
+        required: false
+        type: string
+        default: clean build
+      JAR_FILE_EXTENSION:
+        required: false
+        type: string
+        default: .jar
+jobs:
+  build:
+    name: Build lambda
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Set up Java
+        uses: actions/setup-java@v3
+        with:
+          distribution: ${{ inputs.JAVA_DISTRIBUTION }}
+          java-version: ${{ inputs.JAVA_VERSION }}
+      - name: Set up Gradle
+        uses: gradle/gradle-build-action@v2.8.0
+      - name: Build source lambda
+        run: |
+          cd ${{ inputs.BUILD_DIRECTORY_NAME }}
+          ../gradlew ${{ inputs.GRADLE_COMMAND }}
+      - name: Upload source artifact
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
+          path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION}}

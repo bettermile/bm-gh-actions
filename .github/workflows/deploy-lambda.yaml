@@ -1,0 +1,85 @@
+name: Deploy Lambda
+
+permissions:
+  id-token: write
+  contents: read
+  deployments: write
+
+env:
+  LAMBDA_DESCRIPTION: ${{ github.event.release.name }}
+
+on:
+  workflow_call:
+    inputs:
+      LAMBDA_NAME:
+        required: true
+        type: string
+      ENVIRONMENT_NAME:
+        required: true
+        type: string
+      ROLE_TO_ASSUME:
+        required: true
+        type: string
+      AWS_REGION:
+        required: true
+        type: string
+        default: eu-central-1
+      BUILD_DIRECTORY_NAME:
+        required: false
+        type: string
+        default: source
+      JAR_FILE_EXTENSION:
+        required: false
+        type: string
+        default: .jar
+
+jobs:
+  deploy-lambda:
+    name: Deploy to input environment
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v3
+      - name: Download source artifact
+        uses: actions/download-artifact@v3
+        with:
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
+          path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs
+      - name: Change lambda description if deploying dev environment
+        if: inputs.ENVIRONMENT_NAME == 'dev'
+        run:
+          echo "::set-env name=LAMBDA_DESCRIPTION::${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
+      - name: Create GitHub deployment
+        uses: chrnorm/deployment-action@v2
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          environment: ${{ inputs.ENVIRONMENT_NAME }}
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v3
+        with:
+          role-to-assume: ${{ inputs.ROLE_TO_ASSUME }}
+          role-session-name: ${{ inputs.LAMBDA_NAME }}-oidc
+          aws-region: ${{ inputs.AWS_REGION }}
+      - name: Update source function code, push new version, and update alias
+        run: |
+          aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION }}
+          sleep 5
+          aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description ${{ env.LAMBDA_DESCRIPTION }}
+          latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
+          latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
+          echo "The latest version number is $latestVersionNumber"
+          aws lambda update-alias --function-name ${{ inputs.LAMBDA_NAME }} --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
+      - name: Update deployment status (success)
+        if: success()
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          state: success
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}
+      - name: Update deployment status (failure)
+        if: failure()
+        uses: chrnorm/deployment-action@v2
+        with:
+          token: ${{ github.token }}
+          state: failure
+          deployment-id: ${{ steps.deployment.outputs.deployment_id }}

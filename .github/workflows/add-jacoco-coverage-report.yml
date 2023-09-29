@@ -1,0 +1,43 @@
+name: Add Jacoco code coverage to Pull Request
+
+on:
+  workflow_call:
+    inputs:
+      BUILD_DIRECTORY_NAME:
+        required: false
+        type: string
+        default: source
+      BADGES_DIRECTORY:
+        required: false
+        type: string
+        default: .
+      COVERAGE_LABEL:
+        required: false
+        type: string
+        default: Code
+jobs:
+  add_coverage_to_PR:
+    name: Generate and add code coverage to PR
+    runs-on: ubuntu-latest
+    steps:
+      - name: Add source coverage to PR
+        uses: Madrapps/jacoco-report@v1.6.1
+        with:
+          paths: ${{ github.workspace }}/${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: "${{ inputs.BUILD_DIRECTORY_NAME }}: Test Coverage Report"
+          update-comment: true
+      - name: Generate JaCoCo Badge
+        uses: cicirello/jacoco-badge-generator@v2
+        with:
+          jacoco-csv-file: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test/jacocoTestReport.csv
+          badges-directory: ${{ inputs.BADGES_DIRECTORY }}
+          generate-coverage-badge: true
+          coverage-badge-filename: jacoco-coverage.svg
+          coverage-label: ${{ inputs.COVERAGE_LABEL }} coverage
+      - name: Commit JaCoCo Badge
+        uses: EndBug/add-and-commit@v9
+        with:
+          default_author: github_actions
+          message: 'Commit Jacoco coverage badge'
+          add: '${{ inputs.BADGES_DIRECTORY }}/*.svg'
