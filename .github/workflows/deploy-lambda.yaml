@@ -47,7 +47,7 @@ jobs:
       - name: Change lambda description if deploying dev environment
         if: inputs.ENVIRONMENT_NAME == 'dev'
         run:
-          echo "::set-env name=LAMBDA_DESCRIPTION::${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}"
+          echo "LAMBDA_DESCRIPTION=${GITHUB_REF#refs/heads/}.${GITHUB_SHA::7}" >> "$GITHUB_ENV"
       - name: Create GitHub deployment
         uses: chrnorm/deployment-action@v2
         id: deployment
