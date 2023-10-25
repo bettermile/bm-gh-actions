@@ -20,6 +20,7 @@ jobs:
     name: Generate and add code coverage to PR
     runs-on: ubuntu-latest
     steps:
+      - uses: actions/checkout@v3
       - name: Download jacoco artifacts
         uses: actions/download-artifact@v3
         id: download
