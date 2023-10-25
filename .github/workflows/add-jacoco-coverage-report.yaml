@@ -20,17 +20,22 @@ jobs:
     name: Generate and add code coverage to PR
     runs-on: ubuntu-latest
     steps:
+      - name: Download jacoco artifacts
+        uses: actions/download-artifact@v3
+        id: download
+        with:
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
       - name: Add source coverage to PR
         uses: madrapps/jacoco-report@v1.6.1
         with:
-          paths: ${{ github.workspace }}/${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test/jacocoTestReport.xml
+          paths: ${{steps.download.outputs.download-path}}/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{ inputs.BUILD_DIRECTORY_NAME }}: Test Coverage Report"
           update-comment: true
       - name: Generate JaCoCo Badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
-          jacoco-csv-file: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test/jacocoTestReport.csv
+          jacoco-csv-file: ${{steps.download.outputs.download-path}}/jacocoTestReport.csv
           badges-directory: ${{ inputs.BADGES_DIRECTORY }}
           generate-coverage-badge: true
           coverage-badge-filename: jacoco-coverage.svg
