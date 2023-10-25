@@ -43,3 +43,10 @@ jobs:
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
           path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION}}
+      - name: Upload jacoco files
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
+          path: |
+            ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test/jacocoTestReport.xml
+            ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test/jacocoTestReport.csv
