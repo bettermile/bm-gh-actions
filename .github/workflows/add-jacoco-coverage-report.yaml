@@ -1,5 +1,8 @@
 name: Add Jacoco code coverage to Pull Request
 
+env:
+  JACOCO_DIRECTORY: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test
+
 on:
   workflow_call:
     inputs:
@@ -20,10 +23,13 @@ jobs:
     name: Generate and add code coverage to PR
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
+        with:
+          repository: ${{ github.event.pull_request.head.repo.full_name }}
+          ref: ${{ github.event.pull_request.head.ref }}
       - name: Download jacoco artifacts
-        uses: actions/download-artifact@v3
         id: download
+        uses: actions/download-artifact@v3
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
           path: ${{ env.JACOCO_DIRECTORY }}
