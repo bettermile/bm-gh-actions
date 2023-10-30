@@ -1,5 +1,8 @@
 name: Build JVM Lambda
 
+env:
+  JACOCO_DIRECTORY: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test
+
 on:
   workflow_call:
     inputs:
@@ -43,3 +46,10 @@ jobs:
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
           path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION}}
+      - name: Upload jacoco artifacts
+        uses: actions/upload-artifact@v3
+        with:
+          name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
+          path: |
+            ${{ env.JACOCO_DIRECTORY }}/jacocoTestReport.xml
+            ${{ env.JACOCO_DIRECTORY }}/jacocoTestReport.csv
