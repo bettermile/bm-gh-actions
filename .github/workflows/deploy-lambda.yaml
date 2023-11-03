@@ -62,23 +62,23 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
       - name: Update source function code, push new version, and update alias
         run: |
-          aws lambda update-function-code --function-name ${{ inputs.LAMBDA_NAME }} --zip-file fileb://./${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION }}
+          aws lambda update-function-code --function-name "${{ inputs.LAMBDA_NAME }}" --zip-file fileb://./${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION }}
           sleep 5
-          aws lambda publish-version --function-name ${{ inputs.LAMBDA_NAME }} --description ${{ env.LAMBDA_DESCRIPTION }}
+          aws lambda publish-version --function-name "${{ inputs.LAMBDA_NAME }}" --description "${{ env.LAMBDA_DESCRIPTION }}"
           latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
           latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
           echo "The latest version number is $latestVersionNumber"
-          aws lambda update-alias --function-name ${{ inputs.LAMBDA_NAME }} --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
+          aws lambda update-alias --function-name "${{ inputs.LAMBDA_NAME }}" --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
       - name: Update deployment status (success)
         if: success()
-        uses: chrnorm/deployment-action@v2
+        uses: chrnorm/deployment-status@v2
         with:
           token: ${{ github.token }}
           state: success
           deployment-id: ${{ steps.deployment.outputs.deployment_id }}
       - name: Update deployment status (failure)
         if: failure()
-        uses: chrnorm/deployment-action@v2
+        uses: chrnorm/deployment-status@v2
         with:
           token: ${{ github.token }}
           state: failure
