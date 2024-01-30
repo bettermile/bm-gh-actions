@@ -27,7 +27,7 @@ jobs:
       - name: Default checkout
         uses: actions/checkout@v3
       - name: Install @redocly/cli
-        run: npm i -g @redocly/cli@latest
+        run: npm i -g @redocly/cli@1.7.0
       - name: Documentation push
         run: |
           cd ${{ inputs.OPENAPI_DEFINITION_PATH || './openapi' }}
