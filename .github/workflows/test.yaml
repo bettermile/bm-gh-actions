@@ -49,7 +49,7 @@ jobs:
     steps:
 
       - name: Default Checkout
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
 
       - name: Cache Primes
         if: ${{ inputs.CACHE_PATH_INPUT != '' && inputs.CACHE_KEY_INPUT != '' }}

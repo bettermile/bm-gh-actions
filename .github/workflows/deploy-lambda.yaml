@@ -38,7 +38,7 @@ jobs:
     name: Deploy to input environment
     runs-on: ubuntu-latest
     steps:
-      - uses: actions/checkout@v3
+      - uses: actions/checkout@v4
       - name: Download source artifact
         uses: actions/download-artifact@v3
         with:
