@@ -41,7 +41,7 @@ jobs:
           coverage-badge-filename: jacoco-coverage.svg
 
       - name: Upload JaCoCo coverage report
-        uses: actions/upload-artifact@v2
+        uses: actions/upload-artifact@v3
         with:
           name: jacoco-report
           path: target/site/jacoco/
