@@ -46,7 +46,7 @@ jobs:
           name: jacoco-report
           path: target/site/jacoco/
 
-      - uses: EndBug/add-and-commit@v9.1.1
+      - uses: EndBug/add-and-commit@v9.1.2
         if: github.event_name != 'pull_request'
         with:
           committer_name: CI BOT
