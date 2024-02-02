@@ -2,6 +2,8 @@ name: Build JVM Lambda
 
 env:
   JACOCO_DIRECTORY: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/reports/jacoco/test
+  PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+  PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
 
 on:
   workflow_call:
