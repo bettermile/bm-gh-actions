@@ -42,6 +42,8 @@ on:
         required: true
       PKG_TOKEN:
         required: true
+      API_KEY:
+        required: false
 
 jobs:
   test:
@@ -74,7 +76,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} API_KEY=${{ secrets.API_KEY }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
 
       - name: Cache node modules
         if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
