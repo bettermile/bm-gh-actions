@@ -21,7 +21,7 @@ jobs:
         cd source
         ../gradlew clean build -Dquarkus.package.type=native -Dquarkus.native.container-build=true
     - name: Upload function artifact
-      uses: actions/upload-artifact@v3
+      uses: actions/upload-artifact@v4
       with:
         name: source-build
         path: source/build/function.zip
