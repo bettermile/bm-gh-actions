@@ -56,7 +56,7 @@ jobs:
         run: aws s3 sync ${{ inputs.SOURCE }} ${{ inputs.DESTINATION }}
 
       - name: Cache node modules
-        uses: actions/cache@v3
+        uses: actions/cache@v4
         with:
           path: ${{ inputs.CACHE_PATH }}
           key: ${{ inputs.CACHE_KEY }}
