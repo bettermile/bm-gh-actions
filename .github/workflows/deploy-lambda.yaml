@@ -40,7 +40,7 @@ jobs:
     steps:
       - uses: actions/checkout@v4
       - name: Download source artifact
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
           path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs
