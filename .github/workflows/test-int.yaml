@@ -50,7 +50,7 @@ jobs:
           path: ${{ inputs.CACHE_PATH }}
           key: ${{ inputs.CACHE_KEY }}
       - name: JDK - Setup
-        uses: actions/setup-java@v3
+        uses: actions/setup-java@v4
         with:
           java-version: 11
           distribution: temurin
