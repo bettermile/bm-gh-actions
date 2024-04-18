@@ -43,6 +43,10 @@ on:
         required: false
         type: string
         default: ubuntu-20.04
+      JAVA_ARGS:
+        required: false
+        type: string
+        default: -Xmx4G
     secrets:
       SSH_KEY:
         required: true
@@ -89,7 +93,7 @@ jobs:
       - name: Run Flyway Migration
         shell: bash
         env:
-          JAVA_ARGS: -Xmx4G
+          JAVA_ARGS: ${{ inputs.JAVA_ARGS }}
           FLYWAY_EDITION: Community
           FLYWAY_URL: jdbc:postgresql://localhost:5432/${{ inputs.AWS_RDS_DATABASE }}
           FLYWAY_USER: postgres
