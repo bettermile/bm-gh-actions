@@ -1,0 +1,57 @@
+name: Pulumi Preview
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+
+on:
+  workflow_call:
+    inputs:
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      AWS_ROLE_NAME:
+        required: true
+        type: string
+      AWS_PROFILE:
+        required: true
+        type: string
+      AWS_REGION:
+        required: true
+        type: string
+      PULUMI_STACK:
+        required: true
+        type: string
+      PULUMI_CLOUD_URL:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Configure AWS role
+        uses: aws-actions/configure-aws-credentials@v4.0.1
+        with:
+          role-to-assume: arn:aws:iam::${{ env.AWS_ACCOUNT_ID }}:role/${{ env.AWS_PREVIEW_ROLE }}
+          role-session-name: ${{ github.event.repository.name}}-${{ github.run_id }}
+          aws-region: ${{ env.AWS_REGION }}
+
+      - name: Setup Profile
+        run: |
+          aws configure set region ${{ env.AWS_REGION }} --profile ${{ env.AWS_ROLE_NAME }}
+          aws configure set aws_access_key_id ${{ env.AWS_ACCESS_KEY_ID }} --profile ${{ env.AWS_ROLE_NAME }}
+          aws configure set aws_secret_access_key ${{ env.AWS_SECRET_ACCESS_KEY }} --profile ${{ env.AWS_ROLE_NAME }}
+          aws configure set aws_session_token ${{ env.AWS_SESSION_TOKEN }} --profile ${{ env.AWS_ROLE_NAME }}
+
+      - uses: pulumi/actions@v5
+        with:
+          command: preview
+          stack-name: ${{ env.PULUMI_STACK }}
+          cloud-url: ${{ env.PULUMI_CLOUD_URL }}
+          comment-on-summary: true
+          comment-on-pr: true
