@@ -26,6 +26,10 @@ on:
       PULUMI_CLOUD_URL:
         required: true
         type: string
+      PULUMI_WORK_DIR:
+        required: false
+        type: string
+        default: './'
 
 jobs:
   build:
