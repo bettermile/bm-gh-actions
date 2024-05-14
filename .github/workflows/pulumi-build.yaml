@@ -6,10 +6,18 @@ permissions:
 
 on:
   workflow_call:
+    inputs:
+      WORK_DIR:
+        required: false
+        type: string
+        default: './'
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    defaults:
+      run:
+        working-directory: ${{ inputs.WORK_DIR }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
