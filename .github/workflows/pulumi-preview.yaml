@@ -37,16 +37,16 @@ jobs:
       - name: Configure AWS role
         uses: aws-actions/configure-aws-credentials@v4.0.1
         with:
-          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.AWS_PREVIEW_ROLE }}
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.AWS_ROLE_NAME }}
           role-session-name: ${{ github.event.repository.name}}-${{ github.run_id }}
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Setup Profile
         run: |
-          aws configure set region ${{ env.AWS_REGION }} --profile ${{ inputs.AWS_ROLE_NAME }}
-          aws configure set aws_access_key_id ${{ env.AWS_ACCESS_KEY_ID }} --profile ${{ inputs.AWS_ROLE_NAME }}
-          aws configure set aws_secret_access_key ${{ env.AWS_SECRET_ACCESS_KEY }} --profile ${{ inputs.AWS_ROLE_NAME }}
-          aws configure set aws_session_token ${{ env.AWS_SESSION_TOKEN }} --profile ${{ inputs.AWS_ROLE_NAME }}
+          aws configure set region ${{ env.AWS_REGION }} --profile ${{ inputs.AWS_PROFILE }}
+          aws configure set aws_access_key_id ${{ env.AWS_ACCESS_KEY_ID }} --profile ${{ inputs.AWS_PROFILE }}
+          aws configure set aws_secret_access_key ${{ env.AWS_SECRET_ACCESS_KEY }} --profile ${{ inputs.AWS_PROFILE }}
+          aws configure set aws_session_token ${{ env.AWS_SESSION_TOKEN }} --profile ${{ inputs.AWS_PROFILE }}
 
       - uses: pulumi/actions@v5
         with:
