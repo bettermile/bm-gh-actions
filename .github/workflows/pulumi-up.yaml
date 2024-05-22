@@ -58,3 +58,4 @@ jobs:
           stack-name: ${{ inputs.PULUMI_STACK }}
           cloud-url: ${{ inputs.PULUMI_CLOUD_URL }}
           comment-on-summary: true
+          work-dir: ${{ inputs.PULUMI_WORK_DIR }}
