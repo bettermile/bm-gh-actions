@@ -29,7 +29,7 @@ jobs:
           ref: ${{ github.event.pull_request.head.ref }}
       - name: Download jacoco artifacts
         id: download
-        uses: actions/download-artifact@v3
+        uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
           path: ${{ env.JACOCO_DIRECTORY }}
