@@ -64,7 +64,7 @@ jobs:
 
       - name: Add coverage to PR
         if: github.actor != 'dependabot[bot]' && github.event_name == 'pull_request'
-        uses: madrapps/jacoco-report@d87b949542d04aac2e6b150840948eac77ae62be
+        uses: madrapps/jacoco-report@f4a835c46ef0f03b3ecefd583f22d7c857f34925
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
