@@ -44,12 +44,12 @@ jobs:
           cd ${{ inputs.BUILD_DIRECTORY_NAME }}
           ../gradlew ${{ inputs.GRADLE_COMMAND }}
       - name: Upload source artifact
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-build
           path: ${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION}}
       - name: Upload jacoco artifacts
-        uses: actions/upload-artifact@v3
+        uses: actions/upload-artifact@v4
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
           path: |
