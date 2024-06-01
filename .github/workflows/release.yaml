@@ -21,7 +21,7 @@ jobs:
           fetch-depth: '0'
       - name: Bump version and push tag
         id: tag_bump_step
-        uses: anothrNick/github-tag-action@1.62.0
+        uses: anothrNick/github-tag-action@1.69.0
         env:
           GITHUB_TOKEN: ${{ secrets.RELEASE_GITHUB_TOKEN }}
           RELEASE_BRANCHES: main
