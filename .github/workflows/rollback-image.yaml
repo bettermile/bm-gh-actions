@@ -58,12 +58,12 @@ jobs:
         
       - name: Pull image from ECR
         run: |
-          docker pull ${{env.AWS_ECR_URL}}:${{env.IMAGE_TAG}}
+          docker pull ${{ inputs.AWS_ECR_URL }}:${{ env.IMAGE_TAG }}
 
       - name: Tag image with latest tag
         run: |
-          docker tag ${{env.AWS_ECR_URL}}:${{env.IMAGE_TAG}} ${{env.AWS_ECR_URL}}:latest
+          docker tag ${{ inputs.AWS_ECR_URL}}:${{ env.IMAGE_TAG }} ${{ inputs.AWS_ECR_URL }}:latest
 
       - name: Push tagged image back to ECR
         run: |
-          docker push ${{env.AWS_ECR_URL}}:latest
+          docker push ${{ inputs.AWS_ECR_URL }}:latest
