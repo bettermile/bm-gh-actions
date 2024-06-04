@@ -35,10 +35,15 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Determine image tag
+      - name: Use provided image tag
+        if: inputs.IMAGE_TAG != ''
         run: |
-          PROVIDED_TAG=${{ inputs.IMAGE_TAG }}
-          IMAGE_TAG=$($PROVIDED_TAG || git rev-parse --short ${{ github.sha }})
+          echo "IMAGE_TAG=${{ inputs.IMAGE_TAG }}" >> $GITHUB_ENV
+
+      - name: Set image tag to commit SHA
+        if: inputs.IMAGE_TAG == ''
+        run: |
+          IMAGE_TAG=$(git rev-parse --short ${{ github.sha }})
           echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
 
       - name: Configure AWS Credentials
