@@ -78,7 +78,7 @@ jobs:
       - name: Tag image with Destination ECR
         run: |
           docker tag ${{ inputs.AWS_ECR_URL_FROM }}:${{ env.IMAGE_TAG }} ${{ inputs.AWS_ECR_URL_TO }}:latest
-          docker tag ${{ inputs.AWS_ECR_URL_FROM }}:${{ env.IMAGE_TAG }} ${{ inputs.AWS_ECR_URL_TO }}:${{ inputs.IMAGE_TAG }}
+          docker tag ${{ inputs.AWS_ECR_URL_FROM }}:${{ env.IMAGE_TAG }} ${{ inputs.AWS_ECR_URL_TO }}:${{ env.IMAGE_TAG }}
 
       - name: Set up AWS credentials - Destination
         uses: aws-actions/configure-aws-credentials@v4.0.2
