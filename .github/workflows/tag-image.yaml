@@ -1,4 +1,4 @@
-name: Rollback Latest Image in ECR
+name: Tag Image In ECR
 
 permissions:
   id-token: write
@@ -20,8 +20,11 @@ on:
       AWS_ECR_URL:
         required: true
         type: string
-      IMAGE_TAG:
+      CURRENT_TAG:
         required: false
+        type: string
+      NEW_TAG:
+        required: true
         type: string
       TIMEOUT:
         required: false
@@ -35,16 +38,16 @@ jobs:
     steps:
       - uses: actions/checkout@v4
 
-      - name: Use provided image tag
-        if: inputs.IMAGE_TAG != ''
+      - name: Use provided current image tag
+        if: inputs.CURRENT_TAG != ''
         run: |
-          echo "IMAGE_TAG=${{ inputs.IMAGE_TAG }}" >> $GITHUB_ENV
+          echo "CURRENT_TAG=${{ inputs.CURRENT_TAG }}" >> $GITHUB_ENV
 
-      - name: Set image tag to commit SHA
-        if: inputs.IMAGE_TAG == ''
+      - name: Set current image tag to commit SHA
+        if: inputs.CURRENT_TAG == ''
         run: |
-          IMAGE_TAG=$(git rev-parse --short ${{ github.sha }})
-          echo "IMAGE_TAG=$IMAGE_TAG" >> $GITHUB_ENV
+          CURRENT_TAG=$(git rev-parse --short ${{ github.sha }})
+          echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
 
       - name: Configure AWS Credentials
         uses: aws-actions/configure-aws-credentials@v4.0.2
@@ -58,12 +61,12 @@ jobs:
         
       - name: Pull image from ECR
         run: |
-          docker pull ${{ inputs.AWS_ECR_URL }}:${{ env.IMAGE_TAG }}
+          docker pull ${{ inputs.AWS_ECR_URL }}:${{ env.CURRENT_TAG }}
 
       - name: Tag image with latest tag
         run: |
-          docker tag ${{ inputs.AWS_ECR_URL}}:${{ env.IMAGE_TAG }} ${{ inputs.AWS_ECR_URL }}:latest
+          docker tag ${{ inputs.AWS_ECR_URL}}:${{ env.CURRENT_TAG }} ${{ inputs.AWS_ECR_URL }}:${{ inputs.NEW_TAG }}
 
       - name: Push tagged image back to ECR
         run: |
-          docker push ${{ inputs.AWS_ECR_URL }}:latest
+          docker push ${{ inputs.AWS_ECR_URL }}:${{ inputs.NEW_TAG }}
