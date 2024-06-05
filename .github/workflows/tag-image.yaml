@@ -1,0 +1,72 @@
+name: Tag Image In ECR
+
+permissions:
+  id-token: write
+  contents: read
+
+on:
+  workflow_call:
+    inputs:
+      GITHUB_ROLE:
+        required: true
+        type: string
+      AWS_REGION:
+        required: false
+        type: string
+        default: eu-central-1
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      AWS_ECR_URL:
+        required: true
+        type: string
+      CURRENT_TAG:
+        required: false
+        type: string
+      NEW_TAG:
+        required: true
+        type: string
+      TIMEOUT:
+        required: false
+        type: number
+        default: 10
+
+jobs:
+  rollback-image:
+    runs-on: ubuntu-latest
+    timeout-minutes: ${{ inputs.TIMEOUT }}
+    steps:
+      - uses: actions/checkout@v4
+
+      - name: Use provided current image tag
+        if: inputs.CURRENT_TAG != ''
+        run: |
+          echo "CURRENT_TAG=${{ inputs.CURRENT_TAG }}" >> $GITHUB_ENV
+
+      - name: Set current image tag to commit SHA
+        if: inputs.CURRENT_TAG == ''
+        run: |
+          CURRENT_TAG=$(git rev-parse --short ${{ github.sha }})
+          echo "CURRENT_TAG=$CURRENT_TAG" >> $GITHUB_ENV
+
+      - name: Configure AWS Credentials
+        uses: aws-actions/configure-aws-credentials@v4.0.2
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_ROLE }}
+          role-session-name: ${{ inputs.GITHUB_ROLE }}-oidc
+          aws-region: ${{ inputs.AWS_REGION }}
+
+      - name: Login to ECR
+        uses: aws-actions/amazon-ecr-login@v2
+        
+      - name: Pull image from ECR
+        run: |
+          docker pull ${{ inputs.AWS_ECR_URL }}:${{ env.CURRENT_TAG }}
+
+      - name: Tag image with latest tag
+        run: |
+          docker tag ${{ inputs.AWS_ECR_URL}}:${{ env.CURRENT_TAG }} ${{ inputs.AWS_ECR_URL }}:${{ inputs.NEW_TAG }}
+
+      - name: Push tagged image back to ECR
+        run: |
+          docker push ${{ inputs.AWS_ECR_URL }}:${{ inputs.NEW_TAG }}
