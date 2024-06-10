@@ -1,0 +1,66 @@
+name: Remove old branches
+
+permissions:
+  contents: write
+
+on:
+  workflow_call:
+    inputs:
+      LAST_COMMIT_DAYS_AGO:
+        required: false
+        type: number
+        default: 7
+      BRANCH_REGEX:
+        required: false
+        type: string
+        default: '^(release|rollback)/.+$'
+      DRY_RUN:
+        required: false
+        type: string
+        default: 'false'
+
+jobs:
+  remove-old-release-branches:
+    name: Remove old release branches
+    runs-on: ubuntu-latest
+    steps:
+      - uses: actions/checkout@v4
+      - uses: actions/setup-python@v5
+        with:
+          python-version: '3.12'
+      - uses: actions/cache@v4
+        with:
+          path: ~/.cache/pip
+          key: ${{ runner.os }}-pip
+      - run: pip install PyGithub
+      - name: Remove old branches
+        shell: python
+        run: |
+          from github import Github
+          from github import Auth
+          from datetime import datetime, timedelta, timezone
+          import re
+
+          auth = Auth.Token("${{ secrets.GITHUB_TOKEN }}")
+          g = Github(auth=auth)
+          repo = g.get_repo("${{ github.repository }}")
+          remove_before = datetime.now(timezone.utc) - timedelta(days=${{ inputs.LAST_COMMIT_DAYS_AGO }})
+
+          for branch in repo.get_branches():
+            if not re.match("^(release|rollback)/.+$", branch.name):
+              continue
+            if branch.commit.stats.last_modified_datetime > remove_before:
+              continue
+
+            print(f"Found: {branch.name}, last commit: {branch.commit.stats.last_modified_datetime}")
+
+            if "${{ inputs.DRY_RUN }}" == "true":
+              continue
+
+            try:
+              ref = repo.get_git_ref(f"heads/{branch.name}")
+              ref.delete()
+              print(f"Successfully deleted: {branch.name}")
+            except UnknownObjectException:
+              print('No such branch', branch.name)
+
