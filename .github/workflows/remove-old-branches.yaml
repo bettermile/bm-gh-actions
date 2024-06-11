@@ -47,7 +47,7 @@ jobs:
           remove_before = datetime.now(timezone.utc) - timedelta(days=${{ inputs.LAST_COMMIT_DAYS_AGO }})
 
           for branch in repo.get_branches():
-            if not re.match("^(release|rollback)/.+$", branch.name):
+            if not re.match("${{ inputs.BRANCH_REGEX }}", branch.name):
               continue
             if branch.commit.stats.last_modified_datetime > remove_before:
               continue
