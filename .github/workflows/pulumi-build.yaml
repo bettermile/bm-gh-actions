@@ -23,6 +23,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.WORK_DIR }}
+    env:
+      PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+      PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3
@@ -36,10 +39,5 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Build With Credentials
-        if: ${{ secrets.PKG_ACTOR != '' }}
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew clean build
-
-      - name: Build Without Credentials
-        if: ${{ secrets.PKG_ACTOR == '' }}
+      - name: Build
         run: ./gradlew clean build
