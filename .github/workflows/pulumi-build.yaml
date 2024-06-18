@@ -11,6 +11,11 @@ on:
         required: false
         type: string
         default: './'
+    secrets:
+      PKG_ACTOR:
+        required: false
+      PKG_TOKEN:
+        required: false
 
 jobs:
   build:
@@ -31,5 +36,10 @@ jobs:
       - name: Set up Gradle
         uses: gradle/gradle-build-action@v2
 
-      - name: Build
+      - name: Build With Credentials
+        if: ${{ secrets.PKG_ACTOR != '' }}
+        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew clean build
+
+      - name: Build Without Credentials
+        if: ${{ secrets.PKG_ACTOR == '' }}
         run: ./gradlew clean build
