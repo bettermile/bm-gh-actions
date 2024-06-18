@@ -38,7 +38,7 @@ jobs:
           distribution: ${{ inputs.JAVA_DISTRIBUTION }}
           java-version: ${{ inputs.JAVA_VERSION }}
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v2.8.0
+        uses: gradle/gradle-build-action@v3
       - name: Build source lambda
         run: |
           cd ${{ inputs.BUILD_DIRECTORY_NAME }}
