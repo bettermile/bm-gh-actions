@@ -42,6 +42,10 @@ on:
         required: false
         type: string
         default: './'
+      PULUMI_DIFF:
+        required: false
+        type: string
+        default: 'false'
     secrets:
       PKG_ACTOR:
         required: false
@@ -102,3 +106,4 @@ jobs:
           comment-on-summary: true
           comment-on-pr: true
           work-dir: ${{ inputs.PULUMI_WORK_DIR }}
+          diff: ${{ inputs.PULUMI_DIFF }}
