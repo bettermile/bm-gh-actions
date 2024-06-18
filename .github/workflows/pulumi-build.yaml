@@ -11,6 +11,11 @@ on:
         required: false
         type: string
         default: './'
+    secrets:
+      PKG_ACTOR:
+        required: false
+      PKG_TOKEN:
+        required: false
 
 jobs:
   build:
@@ -18,6 +23,9 @@ jobs:
     defaults:
       run:
         working-directory: ${{ inputs.WORK_DIR }}
+    env:
+      PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+      PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v3

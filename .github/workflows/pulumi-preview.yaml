@@ -20,6 +20,18 @@ on:
       AWS_REGION:
         required: true
         type: string
+      PULUMI_STATE_AWS_ACCOUNT_ID:
+        required: false
+        type: string
+      PULUMI_STATE_AWS_ROLE_NAME:
+        required: false
+        type: string
+      PULUMI_STATE_AWS_PROFILE:
+        required: false
+        type: string
+      PULUMI_STATE_AWS_REGION:
+        required: false
+        type: string
       PULUMI_STACK:
         required: true
         type: string
@@ -30,27 +42,57 @@ on:
         required: false
         type: string
         default: './'
+    secrets:
+      PKG_ACTOR:
+        required: false
+      PKG_TOKEN:
+        required: false
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+      PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
 
-      - name: Configure AWS role
+      - name: Configure Pulumi State AWS role
+        uses: aws-actions/configure-aws-credentials@v4.0.1
+        if: ${{ inputs.PULUMI_STATE_AWS_ACCOUNT_ID != '' }}
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.PULUMI_STATE_AWS_ACCOUNT_ID }}:role/${{ inputs.PULUMI_STATE_AWS_ROLE_NAME }}
+          role-session-name: ${{ github.event.repository.name}}-${{ github.run_id }}
+          aws-region: ${{ inputs.PULUMI_STATE_AWS_REGION }}
+
+      - name: Setup Pulumi State Profile
+        if: ${{ inputs.PULUMI_STATE_AWS_ACCOUNT_ID != '' }}
+        run: |
+          aws configure set region ${{ env.AWS_REGION }} --profile ${{ inputs.PULUMI_STATE_AWS_PROFILE }}
+          aws configure set aws_access_key_id ${{ env.AWS_ACCESS_KEY_ID }} --profile ${{ inputs.PULUMI_STATE_AWS_PROFILE }}
+          aws configure set aws_secret_access_key ${{ env.AWS_SECRET_ACCESS_KEY }} --profile ${{ inputs.PULUMI_STATE_AWS_PROFILE }}
+          aws configure set aws_session_token ${{ env.AWS_SESSION_TOKEN }} --profile ${{ inputs.PULUMI_STATE_AWS_PROFILE }}
+
+      - name: Configure Main AWS role
         uses: aws-actions/configure-aws-credentials@v4.0.1
         with:
           role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.AWS_ROLE_NAME }}
           role-session-name: ${{ github.event.repository.name}}-${{ github.run_id }}
           aws-region: ${{ inputs.AWS_REGION }}
 
-      - name: Setup Profile
+      - name: Setup Main Profile
         run: |
           aws configure set region ${{ env.AWS_REGION }} --profile ${{ inputs.AWS_PROFILE }}
           aws configure set aws_access_key_id ${{ env.AWS_ACCESS_KEY_ID }} --profile ${{ inputs.AWS_PROFILE }}
           aws configure set aws_secret_access_key ${{ env.AWS_SECRET_ACCESS_KEY }} --profile ${{ inputs.AWS_PROFILE }}
           aws configure set aws_session_token ${{ env.AWS_SESSION_TOKEN }} --profile ${{ inputs.AWS_PROFILE }}
+
+      - name: Set up JDK
+        uses: actions/setup-java@v3
+        with:
+          distribution: corretto
+          java-version: 17
 
       - uses: pulumi/actions@v5
         with:
