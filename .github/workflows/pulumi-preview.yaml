@@ -107,3 +107,4 @@ jobs:
           comment-on-pr: true
           work-dir: ${{ inputs.PULUMI_WORK_DIR }}
           diff: ${{ inputs.PULUMI_DIFF }}
+          color: always
