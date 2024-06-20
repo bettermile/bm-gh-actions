@@ -34,7 +34,7 @@ jobs:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
           path: ${{ env.JACOCO_DIRECTORY }}
       - name: Add source coverage to PR
-        uses: madrapps/jacoco-report@v1.6.1
+        uses: madrapps/jacoco-report@v1.6
         with:
           paths: ${{ env.JACOCO_DIRECTORY }}/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
