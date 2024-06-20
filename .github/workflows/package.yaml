@@ -21,7 +21,7 @@ jobs:
       PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
     steps:
       - name: Checkout repo
-        uses: actions/checkout@v3
+        uses: actions/checkout@v4
       - name: Set up JDK
         uses: actions/setup-java@v4
         with:
