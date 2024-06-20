@@ -4,6 +4,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+  PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
+
 on:
   workflow_call:
     inputs:
@@ -40,7 +44,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: temurin
+          distribution: corretto
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Login to GitHub Container Registry
         uses: docker/login-action@v3
@@ -50,7 +57,7 @@ jobs:
           password: ${{ secrets.PKG_TOKEN }}
 
       - name: Gradle - Build
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} ./gradlew clean build -x test
+        run: ./gradlew clean build -x test
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}

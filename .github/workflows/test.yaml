@@ -4,6 +4,10 @@ permissions:
   id-token: write
   contents: read
 
+env:
+  PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+  PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
+
 on:
   workflow_call:
     inputs:
@@ -65,7 +69,10 @@ jobs:
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: temurin
+          distribution: corretto
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
@@ -76,7 +83,7 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: PKG_ACTOR=${{ secrets.PKG_ACTOR }} PKG_TOKEN=${{ secrets.PKG_TOKEN }} API_KEY=${{ secrets.API_KEY }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
+        run: API_KEY=${{ secrets.API_KEY }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
 
       - name: Cache node modules
         if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
