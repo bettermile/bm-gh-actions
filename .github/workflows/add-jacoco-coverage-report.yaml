@@ -41,7 +41,7 @@ jobs:
           title: "${{ inputs.BUILD_DIRECTORY_NAME }}: Test Coverage Report"
           update-comment: true
       - name: Generate JaCoCo Badge
-        uses: cicirello/jacoco-badge-generator@v2
+        uses: cicirello/jacoco-badge-generator@v2.11.0
         with:
           jacoco-csv-file: ${{ env.JACOCO_DIRECTORY }}/jacocoTestReport.csv
           badges-directory: ${{ inputs.BADGES_DIRECTORY }}
