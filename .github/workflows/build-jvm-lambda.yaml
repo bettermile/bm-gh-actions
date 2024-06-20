@@ -26,23 +26,28 @@ on:
         required: false
         type: string
         default: .jar
+
 jobs:
   build:
     name: Build lambda
     runs-on: ubuntu-latest
     steps:
       - uses: actions/checkout@v4
+
       - name: Set up Java
         uses: actions/setup-java@v4
         with:
           distribution: ${{ inputs.JAVA_DISTRIBUTION }}
           java-version: ${{ inputs.JAVA_VERSION }}
+
       - name: Set up Gradle
-        uses: gradle/gradle-build-action@v3
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Build source lambda
         run: |
           cd ${{ inputs.BUILD_DIRECTORY_NAME }}
           ../gradlew ${{ inputs.GRADLE_COMMAND }}
+
       - name: Upload source artifact
         uses: actions/upload-artifact@v4
         with:

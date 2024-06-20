@@ -18,6 +18,7 @@ on:
         required: false
         type: string
         default: Code
+
 jobs:
   add_coverage_to_PR:
     name: Generate and add code coverage to PR
@@ -27,12 +28,14 @@ jobs:
         with:
           repository: ${{ github.event.pull_request.head.repo.full_name }}
           ref: ${{ github.event.pull_request.head.ref }}
+
       - name: Download jacoco artifacts
         id: download
         uses: actions/download-artifact@v4
         with:
           name: ${{ inputs.BUILD_DIRECTORY_NAME }}-jacoco
           path: ${{ env.JACOCO_DIRECTORY }}
+
       - name: Add source coverage to PR
         uses: madrapps/jacoco-report@v1.6
         with:
@@ -40,6 +43,7 @@ jobs:
           token: ${{ secrets.GITHUB_TOKEN }}
           title: "${{ inputs.BUILD_DIRECTORY_NAME }}: Test Coverage Report"
           update-comment: true
+
       - name: Generate JaCoCo Badge
         uses: cicirello/jacoco-badge-generator@v2
         with:
@@ -48,6 +52,7 @@ jobs:
           generate-coverage-badge: true
           coverage-badge-filename: jacoco-coverage.svg
           coverage-label: ${{ inputs.COVERAGE_LABEL }} coverage
+
       - name: Commit JaCoCo Badge
         uses: EndBug/add-and-commit@v9
         with:

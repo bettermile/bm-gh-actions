@@ -14,11 +14,16 @@ jobs:
     steps:
       - name: Default Checkout
         uses: actions/checkout@v4
+
       - name: JDK - Setup
         uses: actions/setup-java@v4
         with:
           java-version: 17
-          distribution: temurin
+          distribution: corretto
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
       - name: Bump Project Version/Create Git Tag/Git Publish
         run: |
           git config --global user.name 'CI BOT'
