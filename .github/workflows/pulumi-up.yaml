@@ -30,10 +30,18 @@ on:
         required: false
         type: string
         default: './'
+    secrets:
+      PKG_ACTOR:
+        required: false
+      PKG_TOKEN:
+        required: false
 
 jobs:
   build:
     runs-on: ubuntu-22.04
+    env:
+      PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+      PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
     steps:
       - name: Checkout code
         uses: actions/checkout@v4
