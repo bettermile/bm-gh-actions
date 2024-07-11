@@ -43,6 +43,10 @@ on:
         required: false
         type: string
         default: UTF-8
+      FLYWAY_OUT_OF_ORDER:
+        required: false
+        type: boolean
+        default: false
       RUNNER:
         required: false
         type: string
@@ -105,7 +109,7 @@ jobs:
           FLYWAY_PASSWORD: ${{ secrets.AWS_RDS_PASSWORD }}
           FLYWAY_SCHEMAS: ${{ inputs.AWS_RDS_SCHEMA || 'public' }}
           FLYWAY_BASELINE_ON_MIGRATE: false
-          FLYWAY_OUT_OF_ORDER: false
+          FLYWAY_OUT_OF_ORDER: ${{ inputs.FLYWAY_OUT_OF_ORDER }}
           FLYWAY_LOCATIONS: /src/main/resources/db/migration
         run: |
           INSTANCE_ID=$(AWS_REGION=${{ inputs.AWS_REGION }} aws ec2 describe-instances --filter "Name=tag:Name,Values=${{ inputs.AWS_BASTION_HOST_NAME || 'BastionHost' }}" --query "Reservations[].Instances[?State.Name == 'running'].InstanceId[]" --output text)
