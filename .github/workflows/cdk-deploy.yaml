@@ -65,7 +65,7 @@ jobs:
           AWS_REGION: ${{ inputs.AWS_REGION }}
           AWS_PROFILE: ${{ inputs.AWS_PROFILE }}
         run: |
-          deploy_output=$(cdk deploy)
+          deploy_output=$(cdk deploy --all)
           echo "deploy_output<<EOF" >> $GITHUB_ENV
           echo "$deploy_output" >> $GITHUB_ENV
           echo "EOF" >> $GITHUB_ENV
