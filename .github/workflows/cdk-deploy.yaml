@@ -1,0 +1,87 @@
+name: CDK Deploy
+
+on:
+  workflow_call:
+    inputs:
+      GITHUB_OIDC_ROLE:
+        required: true
+        type: string
+      CACHE_PATH:
+        required: true
+        type: string
+      CACHE_KEY:
+        required: true
+        type: string
+      AWS_REGION:
+        required: false
+        type: string
+        default: eu-central-1
+      AWS_ACCOUNT_ID:
+        required: true
+        type: string
+      AWS_PROFILE:
+        required: true
+        type: string
+      COMMENT_ON_SUMMARY:
+        required: false
+        type: boolean
+        default: true
+      COMMENT_ON_PR:
+        required: false
+        type: boolean
+        default: true
+
+jobs:
+  cdk-deploy:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: JAVA - Setup
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Cache Primes
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
+
+      - name: AWS Configure Credentials
+        uses: aws-actions/configure-aws-credentials@v4
+        with:
+          role-to-assume: arn:aws:iam::${{ inputs.AWS_ACCOUNT_ID }}:role/${{ inputs.GITHUB_OIDC_ROLE }}
+          role-session-name: ${{ inputs.GITHUB_OIDC_ROLE }}-oidc
+          aws-region: ${{ inputs.AWS_REGION }}
+
+      - name: CDK Deploy
+        env:
+          AWS_REGION: ${{ inputs.AWS_REGION }}
+          AWS_PROFILE: ${{ inputs.AWS_PROFILE }}
+          PLA_ENV: dev
+        run: |
+          deploy_output=$(cdk deploy)
+          echo "deploy_output<<EOF" >> $GITHUB_ENV
+          echo "$deploy_output" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: CDK Deploy Summary Comment
+        if: ${{ inputs.COMMENT_ON_SUMMARY }}
+        run: |
+          echo “### 🚀 Thank you for your contribution. This is the result of the cdk deploy command:” >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.deploy_output }}" >> $GITHUB_STEP_SUMMARY
+
+      - name: CDK Deploy PR Comment
+        if: ${{ inputs.COMMENT_ON_PR }}
+        uses: thollander/actions-comment-pull-request@v2
+        with:
+          comment_tag: ${{ github.run_id }}-${{ github.run_attempt }}
+          message: |
+            🚀 Thank you for your contribution. This is the result of the cdk deploy command:
+            
+            ```
+            ${{ env.deploy_output }}
+            ```

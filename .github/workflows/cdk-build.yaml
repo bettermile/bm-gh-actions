@@ -1,0 +1,44 @@
+name: CDK Build
+
+on:
+  workflow_call:
+    secrets:
+      PKG_ACTOR:
+        required: true
+      PKG_TOKEN:
+        required: true
+    inputs:
+      CACHE_PATH:
+        required: true
+        type: string
+      CACHE_KEY:
+        required: true
+        type: string
+
+jobs:
+  build:
+    runs-on: ubuntu-22.04
+    steps:
+      - name: Checkout code
+        uses: actions/checkout@v4
+
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v3
+
+      - name: Build
+        env:
+          PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+          PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
+        run: ./gradlew clean build
+
+      - name: Cache node modules
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
