@@ -27,6 +27,9 @@ on:
       DOCKER_IMAGE_VERSION:
         required: false
         type: string
+      USE_COMMIT_AS_VERSION:
+        required: false
+        type: boolean
     secrets:
       PKG_ACTOR:
         required: true
@@ -73,9 +76,9 @@ jobs:
       - name: Docker - Build
         run: |
             IMAGE_NAME=${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}
-            docker build --platform linux/amd64 --tag $IMAGE_NAME:latest .
-            if [ "${{ inputs.DOCKER_IMAGE_VERSION }}" != "" ]; then
-              docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ inputs.DOCKER_IMAGE_VERSION }}
+            docker build --platform linux/amd64 --tag $IMAGE_NAME:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }} .
+            if [ "${{ inputs.USE_COMMIT_AS_VERSION }}" = "true" ]; then
+              docker tag $IMAGE_NAME:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }} $IMAGE_NAME:$(git rev-parse --short ${{ github.sha }})
             fi
 
       - name: Docker ECR - Push
