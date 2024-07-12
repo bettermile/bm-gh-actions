@@ -57,6 +57,9 @@ jobs:
           role-session-name: ${{ inputs.GITHUB_OIDC_ROLE }}-oidc
           aws-region: ${{ inputs.AWS_REGION }}
 
+      - name: CDK - Setup
+        run: npm install -g aws-cdk
+
       - name: CDK Deploy
         env:
           AWS_REGION: ${{ inputs.AWS_REGION }}
