@@ -77,7 +77,7 @@ jobs:
           echo " ``` ${{ env.diff_output }}  ```" >> $GITHUB_STEP_SUMMARY
 
       - name: CDK Diff PR Comment
-        if: ${{ inputs.COMMENT_ON_PR && github.event_name != 'pull_request' }}
+        if: ${{ inputs.COMMENT_ON_PR && github.event_name == 'pull_request' }}
         uses: thollander/actions-comment-pull-request@v2
         with:
           comment_tag: ${{ github.run_id }}-${{ github.run_attempt }}
