@@ -64,7 +64,6 @@ jobs:
         env:
           AWS_REGION: ${{ inputs.AWS_REGION }}
           AWS_PROFILE: ${{ inputs.AWS_PROFILE }}
-          PLA_ENV: dev
         run: |
           diff_output=$(cdk diff)
           echo "diff_output<<EOF" >> $GITHUB_ENV
