@@ -71,7 +71,12 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker - Build
-        run: docker build --platform linux/amd64 --tag ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }} .
+        run: |
+            IMAGE_NAME=${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}
+            docker build --platform linux/amd64 --tag $IMAGE_NAME:latest
+            if [ "${{ inputs.DOCKER_IMAGE_VERSION }}" != "" ]; then
+              docker tag $IMAGE_NAME:latest $IMAGE_NAME:${{ inputs.DOCKER_IMAGE_VERSION }}
+            fi
 
       - name: Docker ECR - Push
-        run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
+        run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }} --all-tags
