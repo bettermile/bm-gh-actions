@@ -71,7 +71,7 @@ jobs:
         if: ${{ inputs.COMMENT_ON_SUMMARY }}
         run: |
           echo “### 🚀 Thank you for your contribution. This is the result of the cdk deploy command:” >> $GITHUB_STEP_SUMMARY
-          echo "``` ${{ env.deploy_output }} ```" >> $GITHUB_STEP_SUMMARY
+          echo "${{ env.deploy_output }}" >> $GITHUB_STEP_SUMMARY
 
       - name: CDK Deploy PR Comment
         if: ${{ inputs.COMMENT_ON_PR }}
