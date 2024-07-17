@@ -31,10 +31,6 @@ on:
         required: false
         type: boolean
         default: false
-      PUBLISH_TEST_REPORT:
-        required: false
-        type: boolean
-        default: false
     secrets:
       PKG_ACTOR:
         required: true
@@ -66,12 +62,6 @@ jobs:
 
       - name: Gradle - Build
         run: ./gradlew clean build -x test
-
-      - name: Publish Test Report
-        if: ${{ inputs.PUBLISH_TEST_REPORT }}
-        uses: mikepenz/action-junit-report@v4.3.1
-        with:
-          report_paths: '**/build/test-results/test/TEST-*.xml'
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
