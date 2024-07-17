@@ -68,7 +68,7 @@ jobs:
         run: ./gradlew clean build -x test
 
       - name: Publish Test Report
-        if: ${{ inputs.PUBLISH_TEST_REPORT != true }}
+        if: ${{ inputs.PUBLISH_TEST_REPORT != 'true' }}
         uses: mikepenz/action-junit-report@v4.3.1
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
