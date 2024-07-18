@@ -84,10 +84,10 @@ jobs:
       - name: Gradle - Test
         run: |
           API_KEY=${{ secrets.API_KEY }}
-          if [ -n ${{ inputs.TEST_TARGET }} ]; then
-            ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
-          else
+          if [ -z ${{ inputs.TEST_TARGET }} ]; then
             ./gradlew test --info
+          else
+            ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
           fi
 
       - name: Cache node modules
