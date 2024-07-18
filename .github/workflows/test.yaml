@@ -36,7 +36,6 @@ on:
       TEST_TARGET:
         required: false
         type: string
-        default: "*"
       RUNNER:
         required: false
         type: string
@@ -83,7 +82,13 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: API_KEY=${{ secrets.API_KEY }} ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
+        run: |
+          API_KEY=${{ secrets.API_KEY }}
+          if [ -n ${{ inputs.TEST_TARGET }} ]; then
+            ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
+          else
+            ./gradlew test --info
+          fi
 
       - name: Cache node modules
         if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
