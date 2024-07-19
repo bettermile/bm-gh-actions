@@ -1,0 +1,61 @@
+name: Update coverage badge
+
+env:
+  GIST_SECRET: ${{ secrets.GIST_SECRET }}
+
+on:
+  workflow_call:
+    inputs:
+      CACHE_PATH:
+        required: true
+        type: string
+      CACHE_KEY:
+        required: true
+        type: string
+      BADGE_FILE_NAME:
+        type: string
+        required: true
+      BADGE_COLOUR:
+        type: string
+        required: false
+        default: orange
+    secrets:
+      GIST_SECRET:
+        required: true
+
+jobs:
+  report-coverage:
+    name: Report coverage
+    runs-on: ubuntu-latest
+    steps:
+      - name: Cache Primes
+        if: ${{ inputs.CACHE_PATH != '' && inputs.CACHE_KEY != '' }}
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.CACHE_PATH }}
+          key: ${{ inputs.CACHE_KEY }}
+
+      - name: Add coverage to PR
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Test Coverage Report
+          update-comment: true
+
+      - name: Retrieve total coverage
+        if: github.event_name != 'pull_request'
+        run: |
+          echo "TOTAL_COVERAGE=$(cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total//')" >> $GITHUB_ENV
+
+      - name: Update the coverage badge
+        uses: schneegans/dynamic-badges-action@v1.7.0
+        if: github.event_name != 'pull_request'
+        with:
+          auth: ${{ secrets.GIST_SECRET }}
+          gistID: b75fef3ac175c609329402dca738872d
+          filename: ${{ inputs.BADGE_FILE_NAME }}
+          label: coverage
+          message: ${{ env.TOTAL_COVERAGE }}
+          color: ${{ inputs.BADGE_COLOUR }}

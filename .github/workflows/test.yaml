@@ -3,6 +3,8 @@ name: Stage Test
 permissions:
   id-token: write
   contents: read
+  pull-requests: write
+  checks: write
 
 env:
   PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
@@ -40,6 +42,11 @@ on:
         required: false
         type: string
         default: ubuntu-20.04
+      RUN_KTLINT:
+        required: false
+        type: boolean
+        default: false
+
     secrets:
       PKG_ACTOR:
         required: true
@@ -55,6 +62,14 @@ jobs:
 
       - name: Default Checkout
         uses: actions/checkout@v4
+
+      - name: Run ktlint
+        uses: ScaCap/action-ktlint@v1.8.3
+        if: ${{ github.event_name == 'pull_request' && inputs.RUN_KTLINT && github.actor != 'dependabot[bot]' }}
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          ktlint_version: 1.1.0
 
       - name: Cache Primes
         if: ${{ inputs.CACHE_PATH_INPUT != '' && inputs.CACHE_KEY_INPUT != '' }}
@@ -89,6 +104,12 @@ jobs:
           else
             ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
           fi
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4.3.1
+        if: always()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
 
       - name: Cache node modules
         if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
