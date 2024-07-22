@@ -79,6 +79,7 @@ jobs:
           IMAGE_URL: ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}
           IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
         run: |
+            echo "IMAGE_URL=${{ env.IMAGE_URL }}" >> $GITHUB_ENV
             docker build --platform linux/amd64 --tag ${{ env.IMAGE_URL }}:${{ env.IMAGE_TAG }} .
 
             if [ "${{ inputs.USE_COMMIT_HASH_AS_DOCKER_IMAGE_VERSION }}" = "true" ]; then
