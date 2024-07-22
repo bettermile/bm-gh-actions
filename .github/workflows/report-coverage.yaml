@@ -19,6 +19,9 @@ on:
         type: string
         required: false
         default: orange
+      GIST_ID:
+        type: string
+        required: true
     secrets:
       GIST_SECRET:
         required: true
@@ -54,7 +57,7 @@ jobs:
         if: github.event_name != 'pull_request'
         with:
           auth: ${{ secrets.GIST_SECRET }}
-          gistID: b75fef3ac175c609329402dca738872d
+          gistID: ${{ inputs.GIST_ID }}
           filename: ${{ inputs.BADGE_FILE_NAME }}
           label: coverage
           message: ${{ env.TOTAL_COVERAGE }}
