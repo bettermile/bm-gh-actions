@@ -76,8 +76,8 @@ jobs:
 
       - name: Docker - Build
         env:
-          IMAGE_URL=${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}
-          IMAGE_TAG=${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
+          IMAGE_URL: ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}
+          IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
         run: |
             docker build --platform linux/amd64 --tag ${{ env.IMAGE_URL }}:${{ env.IMAGE_TAG }} .
 
