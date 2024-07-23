@@ -48,6 +48,8 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
+    outputs:
+      deployment-id: ${{ steps.deployment.outputs.deployment_id }}
     steps:
 
       - name: Default Checkout
@@ -60,14 +62,6 @@ jobs:
         with:
           token: ${{ github.token }}
           environment: ${{ inputs.ENVIRONMENT_NAME }}
-
-      - name: Determine deployment ID
-        run: |
-          if [ -n ${{ inputs.DEPLOYMENT_ID }} ]; then
-            echo "DEPLOYMENT_ID=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_ENV
-          else
-            echo "DEPLOYMENT_ID=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_ENV
-          fi
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
@@ -93,6 +87,14 @@ jobs:
             exit $status
           fi
           echo "[INFO] ECS service reached stable state."
+
+      - name: Determine deployment ID
+        run: |
+          if [ -n "${{ inputs.DEPLOYMENT_ID }}" ]; then
+            echo "DEPLOYMENT_ID=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_ENV
+          else
+            echo "DEPLOYMENT_ID=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_ENV
+          fi
 
       - name: Update deployment status (success)
         if: success()

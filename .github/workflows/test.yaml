@@ -111,6 +111,13 @@ jobs:
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
 
+      - name: Upload test report
+        uses: actions/upload-artifact@v4
+        if: always()
+        with:
+          name: test-report
+          path: '${{ github.workspace }}/build/reports/tests/test/**'
+
       - name: Cache node modules
         if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
         uses: actions/cache@v4
