@@ -48,6 +48,8 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
+    outputs:
+      deployment-id: ${{ env.DEPLOYMENT_ID }}
     steps:
 
       - name: Default Checkout
