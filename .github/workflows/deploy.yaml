@@ -63,7 +63,7 @@ jobs:
 
       - name: Determine deployment ID
         run: |
-          if [ -n "${{ inputs.DEPLOYMENT_ID }}" ]; then
+          if [ -n ${{ inputs.DEPLOYMENT_ID }} ]; then
             echo "DEPLOYMENT_ID=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_ENV
           else
             echo "DEPLOYMENT_ID=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_ENV
