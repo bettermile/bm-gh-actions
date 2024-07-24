@@ -34,6 +34,7 @@ on:
       ENVIRONMENT_NAME:
         required: false
         type: string
+        default: production
     outputs:
       DEPLOYMENT_ID:
         value: ${{ jobs.build.steps.deployment.outputs.deployment_id }}
