@@ -99,13 +99,13 @@ jobs:
       - name: Gradle - Test
         if: ${{ !inputs.TEST_TARGET }}
         env:
-          API_KEY=${{ secrets.API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: ./gradlew test --info
 
       - name: Gradle - Test Target
         if: ${{ inputs.TEST_TARGET }}
         env:
-          API_KEY=${{ secrets.API_KEY }}
+          API_KEY: ${{ secrets.API_KEY }}
         run: ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
 
       - name: Publish Test Report
