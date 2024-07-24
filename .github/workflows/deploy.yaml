@@ -45,7 +45,7 @@ on:
         default: 30
     outputs:
       DEPLOYMENT_ID:
-        ${{ jobs.deploy.outputs.deployment-id }}
+        value: ${{ jobs.deploy.outputs.deployment-id }}
 
 
 jobs:
