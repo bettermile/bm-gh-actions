@@ -53,7 +53,7 @@ jobs:
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
     outputs:
-      deployment-id: ${{ steps.determined-deployment.outputs.deployment_id }}
+      deployment-id: ${{ steps.determined-deployment.outputs.deployment-id }}
     steps:
       - name: Default Checkout
         uses: actions/checkout@v4
