@@ -31,6 +31,12 @@ on:
         required: false
         type: boolean
         default: false
+      ENVIRONMENT_NAME:
+        required: false
+        type: string
+    outputs:
+      DEPLOYMENT_ID:
+        value: ${{ jobs.build.steps.deployment.outputs.deployment_id }}
     secrets:
       PKG_ACTOR:
         required: true
@@ -62,6 +68,13 @@ jobs:
 
       - name: Gradle - Build
         run: ./gradlew clean build -x test
+
+      - name: Create GitHub deployment
+        uses: chrnorm/deployment-action@v2.0.7
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          environment: ${{ inputs.ENVIRONMENT_NAME }}
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
