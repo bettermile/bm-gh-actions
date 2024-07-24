@@ -52,10 +52,10 @@ jobs:
       - name: Default Checkout
         uses: actions/checkout@v4
 
-      - name: Create GitHub deployment if there is not previous deployment
+      - name: Create GitHub deployment if there is no previous deployment
         if: ${{ inputs.DEPLOYMENT_ID == '' }}
         uses: chrnorm/deployment-action@v2.0.7
-        id: deployment
+        id: current-deployment
         with:
           token: ${{ github.token }}
           environment: ${{ inputs.ENVIRONMENT_NAME }}
@@ -91,7 +91,7 @@ jobs:
           if [ -n "${{ inputs.DEPLOYMENT_ID }}" ]; then
             echo "deployment-id=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_OUTPUT
           else
-            echo "deployment-id=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_OUTPUT
+            echo "deployment-id=${{ steps.current-deployment.outputs.deployment_id }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Update deployment status (success)
