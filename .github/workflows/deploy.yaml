@@ -52,7 +52,7 @@ jobs:
       - name: Default Checkout
         uses: actions/checkout@v4
 
-      - name: Create GitHub deployment
+      - name: Create GitHub deployment if there is not previous deployment
         if: ${{ inputs.DEPLOYMENT_ID == '' }}
         uses: chrnorm/deployment-action@v2.0.7
         id: deployment
@@ -85,12 +85,13 @@ jobs:
           fi
           echo "[INFO] ECS service reached stable state."
 
-      - name: Determine deployment ID
+      - name: Determine deployment and set deployment-id output
+        id: determined-deployment
         run: |
           if [ -n "${{ inputs.DEPLOYMENT_ID }}" ]; then
-            echo "DEPLOYMENT_ID=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_ENV
+            echo "deployment-id=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_OUTPUT
           else
-            echo "DEPLOYMENT_ID=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_ENV
+            echo "deployment-id=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_OUTPUT
           fi
 
       - name: Update deployment status (success)
@@ -99,7 +100,7 @@ jobs:
         with:
           token: ${{ github.token }}
           state: success
-          deployment-id: ${{ env.DEPLOYMENT_ID }}
+          deployment-id: ${{ steps.determined-deployment.outputs.deployment_id }}
 
       - name: Update deployment status (failure)
         if: failure()
@@ -107,7 +108,5 @@ jobs:
         with:
           token: ${{ github.token }}
           state: failure
-          deployment-id: ${{ env.DEPLOYMENT_ID }}
+          deployment-id: ${{ steps.determined-deployment.outputs.deployment_id }}
 
-    outputs:
-      deployment-id: ${{ steps.deployment.outputs.deployment_id }}
