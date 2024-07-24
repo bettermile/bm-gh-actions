@@ -43,13 +43,17 @@ on:
         required: false
         type: number
         default: 30
+    outputs:
+      DEPLOYMENT_ID:
+        ${{ jobs.deploy.outputs.deployment-id }}
+
 
 jobs:
   deploy:
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
     outputs:
-      deployment-id: ${{ steps.current-deployment.outputs.deployment_id }}
+      deployment-id: ${{ steps.deployment.outputs.deployment_id }}
     steps:
       - name: Default Checkout
         uses: actions/checkout@v4
