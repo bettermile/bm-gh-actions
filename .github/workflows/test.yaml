@@ -45,7 +45,7 @@ on:
       RUN_KTLINT:
         required: false
         type: boolean
-        default: false
+        default: true
 
     secrets:
       PKG_ACTOR:
@@ -97,13 +97,16 @@ jobs:
           aws-region: ${{ inputs.AWS_REGION }}
 
       - name: Gradle - Test
-        run: |
+        if: ${{ !inputs.TEST_TARGET }}
+        env:
           API_KEY=${{ secrets.API_KEY }}
-          if [ -z ${{ inputs.TEST_TARGET }} ]; then
-            ./gradlew test --info
-          else
-            ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
-          fi
+        run: ./gradlew test --info
+
+      - name: Gradle - Test Target
+        if: ${{ inputs.TEST_TARGET }}
+        env:
+          API_KEY=${{ secrets.API_KEY }}
+        run: ./gradlew test --info --tests ${{ inputs.TEST_TARGET }}
 
       - name: Publish Test Report
         uses: mikepenz/action-junit-report@v4.3.1
