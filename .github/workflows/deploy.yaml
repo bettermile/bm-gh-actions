@@ -32,9 +32,6 @@ on:
         required: false
         type: boolean
         default: false
-      ENVIRONMENT_NAME:
-        required: false
-        type: string
       DEPLOYMENT_ID:
         required: false
         type: string
@@ -48,28 +45,10 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
-    outputs:
-      deployment-id: ${{ env.DEPLOYMENT_ID }}
     steps:
 
       - name: Default Checkout
         uses: actions/checkout@v4
-
-      - name: Create GitHub deployment
-        if: ${{ inputs.DEPLOYMENT_ID == '' }}
-        uses: chrnorm/deployment-action@v2.0.7
-        id: deployment
-        with:
-          token: ${{ github.token }}
-          environment: ${{ inputs.ENVIRONMENT_NAME }}
-
-      - name: Determine deployment ID
-        run: |
-          if [ -n "${{ inputs.DEPLOYMENT_ID }}" ]; then
-            echo "DEPLOYMENT_ID=${{ inputs.DEPLOYMENT_ID }}" >> $GITHUB_ENV
-          else
-            echo "DEPLOYMENT_ID=${{ steps.deployment.outputs.deployment_id }}" >> $GITHUB_ENV
-          fi
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
@@ -97,17 +76,17 @@ jobs:
           echo "[INFO] ECS service reached stable state."
 
       - name: Update deployment status (success)
-        if: success()
+        if: success() && inputs.DEPLOYMENT_ID != ''
         uses: chrnorm/deployment-status@v2
         with:
           token: ${{ github.token }}
           state: success
-          deployment-id: ${{ env.DEPLOYMENT_ID }}
+          deployment-id: ${{ inputs.DEPLOYMENT_ID }}
 
       - name: Update deployment status (failure)
-        if: failure()
+        if: failure() && inputs.DEPLOYMENT_ID != ''
         uses: chrnorm/deployment-status@v2
         with:
           token: ${{ github.token }}
           state: failure
-          deployment-id: ${{ env.DEPLOYMENT_ID }}
+          deployment-id: ${{ inputs.DEPLOYMENT_ID }}
