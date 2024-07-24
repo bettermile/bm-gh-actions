@@ -37,7 +37,7 @@ on:
         type: string
     outputs:
       DEPLOYMENT_ID:
-        value: ${{ jobs.build.steps.deployment.outputs.deployment_id }}
+        value: ${{ jobs.build.outputs.deployment_id }}
     secrets:
       PKG_ACTOR:
         required: true
@@ -47,6 +47,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    outputs:
+      deployment_id: ${{ steps.deployment.outputs.deployment_id }}
     steps:
       - name: Default Checkout
         uses: actions/checkout@v4
