@@ -48,10 +48,7 @@ jobs:
   deploy:
     runs-on: ubuntu-22.04
     timeout-minutes: ${{ inputs.TIMEOUT }}
-    outputs:
-      deployment-id: ${{ steps.deployment.outputs.deployment_id }}
     steps:
-
       - name: Default Checkout
         uses: actions/checkout@v4
 
@@ -111,3 +108,6 @@ jobs:
           token: ${{ github.token }}
           state: failure
           deployment-id: ${{ env.DEPLOYMENT_ID }}
+
+    outputs:
+      deployment-id: ${{ steps.deployment.outputs.deployment_id }}
