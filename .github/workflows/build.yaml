@@ -3,6 +3,7 @@ name: Stage Build
 permissions:
   id-token: write
   contents: read
+  deployments: write
 
 env:
   PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
