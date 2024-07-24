@@ -3,6 +3,7 @@ name: Stage Build
 permissions:
   id-token: write
   contents: read
+  deployments: write
 
 env:
   PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
@@ -27,6 +28,16 @@ on:
       DOCKER_IMAGE_VERSION:
         required: false
         type: string
+      USE_COMMIT_HASH_AS_DOCKER_IMAGE_VERSION:
+        required: false
+        type: boolean
+        default: false
+      ENVIRONMENT_NAME:
+        required: false
+        type: string
+    outputs:
+      DEPLOYMENT_ID:
+        value: ${{ jobs.build.outputs.deployment_id }}
     secrets:
       PKG_ACTOR:
         required: true
@@ -36,6 +47,8 @@ on:
 jobs:
   build:
     runs-on: ubuntu-22.04
+    outputs:
+      deployment_id: ${{ steps.deployment.outputs.deployment_id }}
     steps:
       - name: Default Checkout
         uses: actions/checkout@v4
@@ -59,6 +72,13 @@ jobs:
       - name: Gradle - Build
         run: ./gradlew clean build -x test
 
+      - name: Create GitHub deployment
+        uses: chrnorm/deployment-action@v2.0.7
+        id: deployment
+        with:
+          token: ${{ github.token }}
+          environment: ${{ inputs.ENVIRONMENT_NAME }}
+
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
         uses: aws-actions/configure-aws-credentials@v4
@@ -71,7 +91,16 @@ jobs:
         uses: aws-actions/amazon-ecr-login@v2
 
       - name: Docker - Build
-        run: docker build --platform linux/amd64 --tag ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }} .
+        env:
+          IMAGE_URL: ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}
+          IMAGE_TAG: ${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
+        run: |
+            echo "IMAGE_URL=${{ env.IMAGE_URL }}" >> $GITHUB_ENV
+            docker build --platform linux/amd64 --tag ${{ env.IMAGE_URL }}:${{ env.IMAGE_TAG }} .
+
+            if [ "${{ inputs.USE_COMMIT_HASH_AS_DOCKER_IMAGE_VERSION }}" = "true" ]; then
+              docker tag ${{ env.IMAGE_URL }}:${{ env.IMAGE_TAG }} ${{ env.IMAGE_URL }}:$(git rev-parse --short ${{ github.sha }})
+            fi
 
       - name: Docker ECR - Push
-        run: docker push ${{ inputs.AWS_ACCOUNT_ID }}.dkr.ecr.${{ inputs.AWS_REGION }}.amazonaws.com${{ inputs.AWS_ECR_APP_PATH }}:${{ inputs.DOCKER_IMAGE_VERSION || 'latest' }}
+        run: docker push ${{ env.IMAGE_URL }} --all-tags
