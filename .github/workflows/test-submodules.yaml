@@ -30,9 +30,6 @@ on:
         required: false
         type: boolean
         default: true
-    outputs:
-      SUBMODULES:
-        value: ${{ jobs.test.outputs.submodules }}
     secrets:
       PKG_ACTOR:
         required: true
@@ -41,8 +38,6 @@ on:
 
 jobs:
   test:
-    outputs:
-      submodules: ${{ steps.extract-submodules.outputs.submodules }}
     runs-on: ${{ inputs.runner }}
     steps:
 
