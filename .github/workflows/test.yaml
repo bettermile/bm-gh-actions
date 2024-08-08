@@ -86,7 +86,7 @@ jobs:
           distribution: corretto
 
       - name: Set up Gradle
-        uses: gradle/actions/setup-gradle@v3
+        uses: gradle/actions/setup-gradle@v4
 
       - name: Configure AWS Credentials
         if: ${{ inputs.AWS_ACCOUNT_ID != '' }}
@@ -121,7 +121,7 @@ jobs:
           if [ -z $TEST_TARGET ]; then
               echo "TEST_REPORT_NAME=test-report" >> $GITHUB_ENV
           else
-              TEST_REPORT_NAME=$(echo $TEST_TARGET | sed 's/\*//')
+              TEST_REPORT_NAME=$(echo $TEST_TARGET | sed 's/\.\*//')
               echo "The Extracted TEST_REPORT_NAME is: $TEST_REPORT_NAME"
               echo "TEST_REPORT_NAME=$TEST_REPORT_NAME" >> $GITHUB_ENV
           fi
