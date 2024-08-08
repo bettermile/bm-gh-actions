@@ -22,6 +22,10 @@ on:
       GIST_ID:
         type: string
         required: true
+      AGGREGATED_JACOCO_REPORT:
+        type: boolean
+        required: false
+        default: false
     secrets:
       GIST_SECRET:
         required: true
@@ -39,7 +43,7 @@ jobs:
           key: ${{ inputs.CACHE_KEY }}
 
       - name: Add coverage to PR
-        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]'
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !inputs.AGGREGATED_JACOCO_REPORT
         uses: madrapps/jacoco-report@v1.6.1
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
@@ -47,10 +51,24 @@ jobs:
           title: Test Coverage Report
           update-comment: true
 
+      - name: Add coverage to PR from aggregated report
+        if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && inputs.AGGREGATED_JACOCO_REPORT
+        uses: madrapps/jacoco-report@v1.6.1
+        with:
+          paths: ${{ github.workspace }}/build/reports/jacoco/jacocoAggregatedReport/jacocoAggregatedReport.xml
+          token: ${{ secrets.GITHUB_TOKEN }}
+          title: Test Coverage Report
+          update-comment: true
+
       - name: Retrieve total coverage
-        if: github.event_name != 'pull_request'
+        if:  ${{ !inputs.AGGREGATED_JACOCO_REPORT }}
         run: |
           echo "TOTAL_COVERAGE=$(cat build/reports/jacoco/test/html/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total//')" >> $GITHUB_ENV
+
+      - name: Retrieve total coverage from aggregated report
+        if: ${{ inputs.AGGREGATED_JACOCO_REPORT }}
+        run: |
+          echo "TOTAL_COVERAGE=$(cat build/reports/jacoco/jacocoAggregatedReport/html/index.html | grep -o 'Total[^%]*%' | sed 's/<.*>/ /; s/Total//')" >> $GITHUB_ENV
 
       - name: Update the coverage badge
         uses: schneegans/dynamic-badges-action@v1.7.0

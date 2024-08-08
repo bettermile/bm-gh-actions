@@ -1,0 +1,99 @@
+name: Stage Test
+
+permissions:
+  id-token: write
+  contents: read
+  pull-requests: write
+  checks: write
+
+env:
+  PKG_ACTOR: ${{ secrets.PKG_ACTOR }}
+  PKG_TOKEN: ${{ secrets.PKG_TOKEN }}
+
+on:
+  workflow_call:
+    inputs:
+      CACHE_PATH_OUTPUT:
+        required: false
+        type: string
+      CACHE_KEY_OUTPUT:
+        required: false
+        type: string
+      TEST_TARGET:
+        required: false
+        type: string
+      RUNNER:
+        required: false
+        type: string
+        default: ubuntu-latest
+      RUN_KTLINT:
+        required: false
+        type: boolean
+        default: true
+    secrets:
+      PKG_ACTOR:
+        required: true
+      PKG_TOKEN:
+        required: true
+
+jobs:
+  test:
+    runs-on: ${{ inputs.runner }}
+    steps:
+
+      - name: Default Checkout
+        uses: actions/checkout@v4
+
+      - name: Run ktlint
+        uses: ScaCap/action-ktlint@v1.8.3
+        if: ${{ github.event_name == 'pull_request' && inputs.RUN_KTLINT && github.actor != 'dependabot[bot]' }}
+        with:
+          github_token: ${{ secrets.github_token }}
+          reporter: github-pr-review
+          ktlint_version: 1.1.0
+
+      - name: JDK - Setup
+        uses: actions/setup-java@v4
+        with:
+          java-version: 17
+          distribution: corretto
+          cache: gradle
+
+      - name: Gradle - Test
+        if: ${{ !inputs.TEST_TARGET }}
+        run: ./gradlew test jacocoAggregatedReport --info
+
+      - name: Gradle - Test Target
+        if: ${{ inputs.TEST_TARGET }}
+        run: ./gradlew test jacocoAggregatedReport --tests ${{ inputs.TEST_TARGET }}
+
+      - name: Publish Test Report
+        uses: mikepenz/action-junit-report@v4.3.1
+        if: always()
+        with:
+          report_paths: '**/build/test-results/test/TEST-*.xml'
+
+      - name: Extract Tests Reports Path
+        run: |
+          reportsPaths=$(find . -type d  -iname "*tests*" -mindepth 4 -maxdepth 4 -exec bash -c 'echo "{}"' \; | sed 's|$|/test/**|')
+          echo "reportsPaths found: $reportsPaths"
+          echo "reportsPaths<<EOF" >> $GITHUB_ENV
+          echo "$reportsPaths" >> $GITHUB_ENV
+          echo "EOF" >> $GITHUB_ENV
+
+      - name: Upload tests reports
+        uses: actions/upload-artifact@v4
+        with:
+          name: test-reports
+          path: |
+            ${{ env.reportsPaths}}
+
+      - name: Cache Primes
+        if: ${{ inputs.CACHE_PATH_OUTPUT != '' && inputs.CACHE_KEY_OUTPUT != '' }}
+        uses: actions/cache@v4
+        with:
+          path: ${{ inputs.CACHE_PATH_OUTPUT }}
+          key: ${{ inputs.CACHE_KEY_OUTPUT }}
+
+
+

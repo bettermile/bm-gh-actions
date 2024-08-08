@@ -114,11 +114,23 @@ jobs:
         with:
           report_paths: '**/build/test-results/test/TEST-*.xml'
 
+      - name: Extract Test Report Name
+        env:
+          TEST_TARGET: ${{ inputs.TEST_TARGET }}
+        run: |
+          if [ -z $TEST_TARGET ]; then
+              echo "TEST_REPORT_NAME=test-report" >> $GITHUB_ENV
+          else
+              TEST_REPORT_NAME=$(echo $TEST_TARGET | sed 's/\.\*//')
+              echo "The Extracted TEST_REPORT_NAME is: $TEST_REPORT_NAME"
+              echo "TEST_REPORT_NAME=$TEST_REPORT_NAME" >> $GITHUB_ENV
+          fi
+
       - name: Upload test report
         uses: actions/upload-artifact@v4
         if: always()
         with:
-          name: test-report
+          name: ${{ env.TEST_REPORT_NAME }}
           path: '${{ github.workspace }}/build/reports/tests/test/**'
 
       - name: Cache node modules
