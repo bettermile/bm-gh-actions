@@ -69,9 +69,7 @@ jobs:
         run: |
           aws lambda update-function-code --function-name "${{ inputs.LAMBDA_NAME }}" --zip-file fileb://./${{ inputs.BUILD_DIRECTORY_NAME }}/build/libs/${{ inputs.BUILD_DIRECTORY_NAME }}${{ inputs.JAR_FILE_EXTENSION }}
           sleep 5
-          aws lambda publish-version --function-name "${{ inputs.LAMBDA_NAME }}" --description "${{ env.LAMBDA_DESCRIPTION }}"
-          latestVersion=$( aws lambda list-versions-by-function --function-name ${{ inputs.LAMBDA_NAME }} --no-paginate --query "max_by(Versions, &to_number(to_number(Version) || '0'))" )
-          latestVersionNumber=$( echo $latestVersion | grep -o '"Version": "[^"]*' | grep -o '[^"]*$' )
+          latestVersionNumber=$( aws lambda publish-version --function-name "${{ inputs.LAMBDA_NAME }}" --description "${{ env.LAMBDA_DESCRIPTION }}" --query "Version" --output text )
           echo "The latest version number is $latestVersionNumber"
           aws lambda update-alias --function-name "${{ inputs.LAMBDA_NAME }}" --name live --function-version $latestVersionNumber --routing-config AdditionalVersionWeights={}
 
