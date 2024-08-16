@@ -60,6 +60,18 @@ jobs:
           aws configure set aws_secret_access_key ${{ env.AWS_SECRET_ACCESS_KEY }} --profile ${{ inputs.AWS_PROFILE }}
           aws configure set aws_session_token ${{ env.AWS_SESSION_TOKEN }} --profile ${{ inputs.AWS_PROFILE }}
 
+      - name: Set up JDK
+        uses: actions/setup-java@v4
+        with:
+          distribution: corretto
+          java-version: 17
+
+      - name: Set up Gradle
+        uses: gradle/actions/setup-gradle@v4
+
+      - name: Build
+        run: ./gradlew clean build
+
       - uses: pulumi/actions@v5
         with:
           command: up
