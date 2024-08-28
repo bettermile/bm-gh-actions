@@ -30,6 +30,9 @@ on:
         required: false
         type: string
         default: './'
+      COMMAND_BEFORE_UP:
+        required: false
+        type: string
     secrets:
       PKG_ACTOR:
         required: false
@@ -68,6 +71,11 @@ jobs:
 
       - name: Set up Gradle
         uses: gradle/actions/setup-gradle@v4
+
+      - name: Custom Command
+        if: ${{ inputs.COMMAND_BEFORE_UP != '' }}
+        run: |
+          ${{ inputs.COMMAND_BEFORE_UP }}
 
       - uses: pulumi/actions@v5
         with:
