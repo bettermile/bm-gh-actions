@@ -44,7 +44,7 @@ jobs:
 
       - name: Add coverage to PR
         if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && !inputs.AGGREGATED_JACOCO_REPORT
-        uses: madrapps/jacoco-report@v1.6.1
+        uses: madrapps/jacoco-report@v1.7.0
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/test/jacocoTestReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
@@ -53,7 +53,7 @@ jobs:
 
       - name: Add coverage to PR from aggregated report
         if: github.event_name == 'pull_request' && github.actor != 'dependabot[bot]' && inputs.AGGREGATED_JACOCO_REPORT
-        uses: madrapps/jacoco-report@v1.6.1
+        uses: madrapps/jacoco-report@v1.7.0
         with:
           paths: ${{ github.workspace }}/build/reports/jacoco/jacocoAggregatedReport/jacocoAggregatedReport.xml
           token: ${{ secrets.GITHUB_TOKEN }}
