@@ -72,7 +72,7 @@ jobs:
       - name: Build with Gradle
         run: ./gradlew clean build
 
-      - uses: pulumi/actions@v5
+      - uses: pulumi/actions@v6
         with:
           command: up
           stack-name: ${{ inputs.PULUMI_STACK }}
