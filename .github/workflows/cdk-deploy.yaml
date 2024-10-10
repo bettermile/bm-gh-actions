@@ -78,7 +78,7 @@ jobs:
 
       - name: CDK Deploy PR Comment
         if: ${{ inputs.COMMENT_ON_PR && github.event.pull_request.merged }}
-        uses: thollander/actions-comment-pull-request@v2
+        uses: thollander/actions-comment-pull-request@v3
         with:
           comment_tag: ${{ github.run_id }}-${{ github.run_attempt }}
           message: |
